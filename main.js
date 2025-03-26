@@ -7,6 +7,8 @@ const atob = require('atob');
 const btoa = require('btoa');
 const Enquirer = require('enquirer');
 
+// Converts a JavaScript object (potentially with functions) into a string representation
+// suitable for injection into the target environment. Functions are converted to their string form.
 const objToString = (obj) => {
   let ret = "{";
 
@@ -41,7 +43,7 @@ console.log('InjectCheatF5 v1.2');
 console.log('------------------------------------------------------------------------------------------');
 console.log('');
 
-const port = 32123;
+const cdp_port = 32123;
 const config = require(process.cwd() + '/config.js');
 try {
   const customConfig = require(process.cwd() + '/config.custom.js');
@@ -65,9 +67,9 @@ console.log('');
 
 function attach(name) {
   return new Promise((resolve, reject) => {
-    const idleon = spawn(name, [`--remote-debugging-port=${port}`]);
+    const idleon = spawn(name, [`--remote-debugging-port=${cdp_port}`]);
 
-    //get the web socket url
+    // Chrome/Electron outputs the DevTools WebSocket URL to stderr on startup.
     idleon.stderr.on('data', (data) => {
       const match = data.toString().match(/DevTools listening on (ws:\/\/.*)/);
       if (match) {
@@ -80,7 +82,7 @@ function attach(name) {
 async function setupIntercept(hook) {
   const options = {
     tab: hook,
-    port: port
+    port: cdp_port
   };
 
   const client = await CDP(options);
@@ -91,6 +93,7 @@ async function setupIntercept(hook) {
   let cheats = await fs.readFile('cheats.js', 'utf8');
   cheats = `let startupCheats = ${JSON.stringify(startupCheats)};\nlet cheatConfig = ${objToString(cheatConfig)};\n${cheats}`;
 
+  // Intercept specific script requests to modify their content before execution.
   await Network.setRequestInterception(
     {
       patterns: [
@@ -102,7 +105,9 @@ async function setupIntercept(hook) {
       ],
     }
   );
+  // Disable Content Security Policy to allow injecting and executing modified/external scripts.
   await Page.setBypassCSP({ enabled: true });
+  // Optionally forward console messages from the game window to this script's console.
   if (injectorConfig.showConsoleLog) {
     Runtime.consoleAPICalled((entry) => {
       console.log(entry.args.map(arg => arg.value).join(" "));
@@ -114,47 +119,53 @@ async function setupIntercept(hook) {
   const eval = await Runtime.evaluate({ expression: cheats });
   console.log('Loaded cheats...');
 
-  // Set up the interceptor callback *before* resolving the setup promise
+  // Define the handler for intercepted requests. This runs for each matched script.
   Network.requestIntercepted(async ({ interceptionId, request }) => {
-    try { // Add try-catch for robustness within the callback
-      console.log(`Intercepted: ${request.url}`); // Add logging
+    // Wrap in try-catch to prevent unhandled errors in the interception callback from crashing the injector.
+    try {
+      console.log(`Intercepted: ${request.url}`);
       const response = await Network.getResponseBodyForInterception({ interceptionId });
       const originalBody = atob(response.body);
-      // Regex definitions
+
+      // Regex to find the main application variable assignment in the game's code.
+      // This is crucial for hooking the cheats into the game's context.
       const InjReg = new RegExp(injectorConfig.injreg);
       const InjRegG = new RegExp(injectorConfig.injreg, "g");
-      const VarName = new RegExp("^\\w+");
+      const VarName = new RegExp("^\\w+"); // Extracts the variable name itself.
 
       const AppMain = InjRegG.exec(originalBody);
       if (!AppMain) {
-        console.error(`Injection regex '${injectorConfig.injreg}' did not match the script content.`);
-        // Continue with original response or handle error appropriately
+        console.error(`Injection regex '${injectorConfig.injreg}' did not match the script content. Cannot inject.`);
+        // Allow the original script to load if injection point isn't found.
         Network.continueInterceptedRequest({ interceptionId });
         return;
       }
+      // Extract the variable name found by the regex.
       const AppVar = Array(AppMain.length).fill("");
       for (let i = 0; i < AppMain.length; i++) AppVar[i] = VarName.exec(AppMain[i])[0];
 
       let manipulatorResult = await Runtime.evaluate({ expression: 'getZJSManipulator()', awaitPromise: true });
       let newBody;
 
-      // Check if manipulator exists and is a function string
       if (manipulatorResult.result && manipulatorResult.result.type === 'string') {
+        // Execute the manipulator function fetched from the target context.
         let manipulator = new Function("return " + manipulatorResult.result.value)();
-        newBody = manipulator(originalBody); // Apply manipulator if exists
+        newBody = manipulator(originalBody);
       } else {
+        // If no manipulator is defined or it's invalid, use the original script body.
         console.warn('getZJSManipulator() did not return a valid function string. Applying basic injection only.');
-        newBody = originalBody; // Fallback to original body if manipulator fails
+        newBody = originalBody;
       }
 
-
-      // Ensure the replacement happens correctly
-      // Use a non-global regex for replacement to avoid state issues if InjReg has global flag
+      // Core injection: Assign the found game variable to a global window property (`__idleon_cheats__`)
+      // This makes the game's main object accessible to the cheat script.
+      // Use a non-global regex for replacement to ensure only the first match is replaced.
       const replacementRegex = new RegExp(injectorConfig.injreg);
       newBody = newBody.replace(replacementRegex, `window.__idleon_cheats__=${AppVar[0]};$&`);
 
 
       console.log('Updated game code...');
+
       const newHeaders = [
         `Date: ${(new Date()).toUTCString()}`,
         `Connection: closed`,
@@ -176,7 +187,8 @@ async function setupIntercept(hook) {
       console.log('Cheat injected!');
     } catch (error) {
       console.error("Error during request interception:", error);
-      // Attempt to continue the request without modification to prevent hanging
+      // Attempt to continue the request with the original content if modification fails,
+      // to prevent the game from potentially hanging.
       try {
         await Network.continueInterceptedRequest({ interceptionId });
       } catch (continueError) {
@@ -185,59 +197,59 @@ async function setupIntercept(hook) {
     }
   });
 
-  // Resolve the promise *after* setting up the listener
-  // This indicates that setup is complete and ready to intercept
-  console.log("Interception listener setup complete."); // New log
-  // No explicit promise needed here anymore if we just await the setup steps.
-  // The function will return the client implicitly after all awaits complete.
-
-  return client; // Return the client directly
+  console.log("Interception listener setup complete.");
+  return client; // Return the CDP client for further interaction.
 }
 
-// Adjust the main async block accordingly
+// Main execution block
 (async () => {
-  try { // Add top-level try-catch
+  // Wrap main logic in try-catch for overall error handling.
+  try {
     const hook = await attach('LegendsOfIdleon.exe');
-    console.log("Attached to game process."); // Added log
+    console.log("Attached to game process.");
 
-    // setupIntercept now returns the client directly after setup is done
     const client = await setupIntercept(hook);
-    console.log("Interceptor setup finished."); // Added log
+    console.log("Interceptor setup finished.");
 
     const { Runtime, Page } = client;
 
+    // Wait for the page's load event to ensure the DOM, including the iframe, is ready.
     Page.loadEventFired(async () => {
-      try { // Add try-catch for loadEventFired
-        console.log("Page load event fired."); // Added log
+      // Wrap event handler logic in try-catch.
+      try {
+        console.log("Page load event fired.");
+        // Define the JavaScript context within the game's iframe where the cheats operate.
+        // This relies on the successful injection performed by the interceptor.
         const context = `window.document.querySelector('iframe').contentWindow.__idleon_cheats__`;
 
         console.log('Inititalizing cheats ingame...');
-        // Add error checking for context existence
+        // Verify that the cheat context actually exists before trying to use it.
         const contextExists = await Runtime.evaluate({ expression: `!!${context}` });
         if (!contextExists.result.value) {
           console.error("Cheat context not found in iframe. Injection might have failed.");
           return; // Stop if context is missing
         }
 
+        // Call the `setup` function defined in cheats.js within the game's context.
         const init = await Runtime.evaluate({ expression: `setup.call(${context})`, awaitPromise: true, allowUnsafeEvalBlockedByCSP: true });
         console.log(init.result.value);
 
+        // Fetch autocomplete suggestions and confirmation requirements from the cheat context.
         let choicesResult = await Runtime.evaluate({ expression: `getAutoCompleteSuggestions.call(${context})`, awaitPromise: true, returnByValue: true });
-        // Check for errors or undefined result
         if (choicesResult.exceptionDetails) {
           console.error("Error getting autocomplete suggestions:", choicesResult.exceptionDetails.text);
-          return;
+          return; // Stop if fetching suggestions fails.
         }
         let choices = choicesResult.result.value || []; // Default to empty array
 
         let cheatsNeedingConfirmationResult = await Runtime.evaluate({ expression: `getChoicesNeedingConfirmation.call(${context})`, awaitPromise: true, returnByValue: true });
         if (cheatsNeedingConfirmationResult.exceptionDetails) {
           console.error("Error getting confirmation choices:", cheatsNeedingConfirmationResult.exceptionDetails.text);
-          return;
+          return; // Stop if fetching confirmation list fails.
         }
         let cheatsNeedingConfirmation = cheatsNeedingConfirmationResult.result.value || []; // Default to empty array
 
-
+        // Function to continuously prompt the user for cheat commands.
         async function promptUser() {
           // ... (rest of promptUser remains the same, but add try-catch inside)
           try {
@@ -255,18 +267,23 @@ async function setupIntercept(hook) {
                 let str = input.toLowerCase();
                 let mustInclude = str.split(" ");
                 return choices.filter(ch => {
+                  // Ensure the choice message includes all words from the input.
                   for (word of mustInclude) {
                     if (!ch.message.toLowerCase().includes(word)) return false;
                   }
                   return true
                 });
               },
+              // Custom submit logic to handle confirmation for specific cheats.
               onSubmit: function (name, value, prompt) {
-                value = this.focused ? this.focused.value : value;
+                value = this.focused ? this.focused.value : value; // Use focused value if available.
                 let choiceNeedsConfirmation = false;
+                // Check if the selected cheat requires confirmation.
                 cheatsNeedingConfirmation.forEach((e) => {
                   if (value.indexOf(e) === 0) choiceNeedsConfirmation = true;
                 });
+                // If confirmation is needed and not yet given, re-render the prompt
+                // with the chosen value, requiring a second Enter press to confirm.
                 if (choiceNeedsConfirmation && !valueChosen && this.focused) {
                   prompt.input = value;
                   prompt.state.cursor = value.length;
@@ -279,16 +296,20 @@ async function setupIntercept(hook) {
                 }
               },
               onRun: async function () {
+                // Ensure completion runs, potentially needed for async operations within prompt.
                 await this.complete();
               },
-              cancel: function () { },
+              cancel: function () { }, // Define cancel behavior if needed.
             });
+
+            // Special command to open Chrome DevTools for the game instance.
             if (action === 'chromedebug') {
               const response = await client.Target.getTargetInfo();
-              const url = `http://localhost:${port}/devtools/inspector.html?experiment=true&ws=localhost:${port}/devtools/page/${response.targetInfo.targetId}`;
+              const url = `http://localhost:${cdp_port}/devtools/inspector.html?experiment=true&ws=localhost:${cdp_port}/devtools/page/${response.targetInfo.targetId}`;
               spawn(injectorConfig.chrome, ["--new-window", url])
               console.log('Opened idleon chrome debugger');
             } else {
+              // Execute the selected cheat command within the game's context.
               const cheatResponse = await Runtime.evaluate({ expression: `cheat.call(${context}, '${action}')`, awaitPromise: true, allowUnsafeEvalBlockedByCSP: true });
               if (cheatResponse.exceptionDetails) {
                 console.error(`Error executing cheat '${action}':`, cheatResponse.exceptionDetails.text);
@@ -306,6 +327,7 @@ async function setupIntercept(hook) {
             await promptUser(); // Be cautious with recursion on error
           }
         }
+        // Start the initial user prompt loop.
         await promptUser();
       } catch (loadEventError) {
         console.error("Error during Page.loadEventFired handler:", loadEventError);
