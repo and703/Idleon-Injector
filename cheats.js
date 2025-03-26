@@ -289,9 +289,8 @@ const minigameCheat = function (params) {
   setupPoingProxy.call(this);
   setupHoopsMinigameProxy.call(this);
   cheatState.minigame[params[0]] = !cheatState.minigame[params[0]];
-  return `${cheatState.minigame[params[0]] ? "Activated" : "Deactivated"} ${
-    params[0]
-  } minigame cheat.`;
+  return `${cheatState.minigame[params[0]] ? "Activated" : "Deactivated"} ${params[0]
+    } minigame cheat.`;
 };
 registerCheats({
   name: "minigame",
@@ -360,9 +359,8 @@ registerCheats({
       fn: function (params) {
         if (!cheatState.wide[params[0]]) rollAllObols();
         cheatState.wide[params[0]] = !cheatState.wide[params[0]];
-        return `${
-          cheatState.wide[params[0]] ? "Activated" : "Deactived"
-        } Perfect obol rolls. Family and inventory obols update on character change.`;
+        return `${cheatState.wide[params[0]] ? "Activated" : "Deactived"
+          } Perfect obol rolls. Family and inventory obols update on character change.`;
       },
     },
     {
@@ -703,9 +701,9 @@ registerCheat(
     ) {
       cheatConfig.nomore.items.map((r) => r.toString()).includes(regex.toString())
         ? cheatConfig.nomore.items.splice(
-            cheatConfig.nomore.items.map((r) => r.toString()).indexOf(regex.toString()),
-            1
-          )
+          cheatConfig.nomore.items.map((r) => r.toString()).indexOf(regex.toString()),
+          1
+        )
         : cheatConfig.nomore.items.push(regex);
       return `${params[0]} will ${cheatConfig.nomore.items.includes(regex) ? "not " : ""}drop.`;
     } else {
@@ -1060,7 +1058,7 @@ registerCheat(
   "Hit the jackpot in the arcade"
 );
 
-registerCheat("chromedebug", () => {}, "Open the game in a chrome debug console"); //handled in the executable
+registerCheat("chromedebug", () => { }, "Open the game in a chrome debug console"); //handled in the executable
 
 /****************************************************************************************************
   The following functions only aggregate information from the game's data structures.
@@ -1417,9 +1415,8 @@ registerCheat(
   "cloudz",
   function () {
     cheatState.cloudz = !cheatState.cloudz;
-    return `${
-      cheatState.cloudz ? "Activated" : "Deactived"
-    } the cloudsave jammer: Your game will not be saved while it's active! \nOnce disabled, your game will proc a cloudsave in 5 seconds. \nProbably doesn't work.`;
+    return `${cheatState.cloudz ? "Activated" : "Deactived"
+      } the cloudsave jammer: Your game will not be saved while it's active! \nOnce disabled, your game will proc a cloudsave in 5 seconds. \nProbably doesn't work.`;
   },
   "Stop cloud saving"
 );
@@ -1466,17 +1463,17 @@ const wipeFunction = function (params) {
         (v, k) =>
           typeof v === "string" &&
           k >
-            100 +
-              bEngine.gameAttributes.h.CogOrder.slice(100)
-                .toString()
-                .match(/Player/g).length -
-              1 +
-              parseInt(cheatConfig.wipe.cogs) &&
+          100 +
+          bEngine.gameAttributes.h.CogOrder.slice(100)
+            .toString()
+            .match(/Player/g).length -
+          1 +
+          parseInt(cheatConfig.wipe.cogs) &&
           !v.includes("Player") &&
           ((bEngine.gameAttributes.h.CogOrder[k] = "Blank"),
-          bEngine.gameAttributes.h.CogMap[k]
-            .keys()
-            .keys.forEach((a) => delete bEngine.gameAttributes.h.CogMap[k].h[a]))
+            bEngine.gameAttributes.h.CogMap[k]
+              .keys()
+              .keys.forEach((a) => delete bEngine.gameAttributes.h.CogMap[k].h[a]))
       );
     }
   } else return "Unknown sub-command given\nKnown sub-commands are 'inv', 'chest', 'forge'.";
@@ -1883,7 +1880,7 @@ async function setup() {
   // This stops the steamachieve34/35 bug. This function is in steam.js.
   // The name is generated so it may well change between versions and need updating here
   // changed for a solution not relying on the name.
-  window[0].agIis = function () {};
+  window[0].agIis = function () { };
 
   let rtn = [];
   rtn.push("--------------------");
@@ -1945,7 +1942,7 @@ function setupBehaviorScriptProxies() {
         ) {
           argumentsList[0] = 0;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       Reflect.apply(originalFn, context, argumentsList);
     },
@@ -1972,7 +1969,7 @@ function setupBehaviorScriptProxies() {
         ) {
           argumentsList[0] = 5;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       Reflect.apply(originalFn, context, argumentsList);
     },
@@ -2006,9 +2003,9 @@ function setupAutoLootProxy() {
         if (context._DropType == "COIN" || context._DropType.substring(0, 5) == "Cards") {
           cheatConfig.wide.autoloot.tochest && context._DropType == "COIN"
             ? (bEngine.gameAttributes.h.MoneyBANK =
-                bEngine.getGameAttribute("MoneyBANK") + context._DropAmount)
+              bEngine.getGameAttribute("MoneyBANK") + context._DropAmount)
             : (bEngine.gameAttributes.h.Money =
-                bEngine.getGameAttribute("Money") + context._DropAmount);
+              bEngine.getGameAttribute("Money") + context._DropAmount);
           context._ImageInst = null;
           behavior.recycleActor(context.actor);
           return;
@@ -2220,7 +2217,7 @@ function setupItemMoveProxy() {
             bEngine.setGameAttribute("AFKtarget", originalTarget);
             return rtn;
           }
-        } catch (e) {}
+        } catch (e) { }
         try {
           if (
             cheatState.unlock.divinitypearl &&
@@ -2245,7 +2242,7 @@ function setupItemMoveProxy() {
             bEngine.gameAttributes.h["Lv0"] = levels;
             return Reflect.apply(argumentsList[0], context, []);
           }
-        } catch (e) {}
+        } catch (e) { }
         return Reflect.apply(originalFn, context, argumentsList);
       },
     }
@@ -2694,9 +2691,9 @@ function setupTalentProxy() {
   events(124)._customBlock_GetTalentNumber = (...argumentsList) => {
     return cheatState.talent[argumentsList[1]]
       ? cheatConfig.talent[argumentsList[1]](
-          Reflect.apply(getTalentNumber, this, argumentsList),
-          argumentsList
-        )
+        Reflect.apply(getTalentNumber, this, argumentsList),
+        argumentsList
+      )
       : Reflect.apply(getTalentNumber, this, argumentsList);
   };
 }
@@ -3075,8 +3072,8 @@ function setupw4StuffProxy() {
         return 4 == argumentsList[1]
           ? 1
           : 5 == argumentsList[1]
-          ? 0
-          : Reflect.apply(originalFn, context, argumentsList); // always cook a new recipe
+            ? 0
+            : Reflect.apply(originalFn, context, argumentsList); // always cook a new recipe
       if (
         cheatState.w4.freekitchens &&
         (t == "CookingNewKitchenCoinCost" || t == "CookingUpgSpiceCostQty")
@@ -3096,8 +3093,8 @@ function setupw4StuffProxy() {
       return 4 == argumentsList[1]
         ? 1
         : 5 == argumentsList[1]
-        ? 0
-        : Reflect.apply(CookingR, this, argumentsList); // always cook a new recipe
+          ? 0
+          : Reflect.apply(CookingR, this, argumentsList); // always cook a new recipe
     if (
       cheatState.w4.freekitchens &&
       (t == "CookingNewKitchenCoinCost" || t == "CookingUpgSpiceCostQty")
@@ -3477,12 +3474,12 @@ function rollPerfectObols(obolOrder, obolMap, characterClass) {
   const primaryStat = [1, 2, 3].includes(characterClass)
     ? "LUK"
     : [31, 32, 33, 34, 36].includes(characterClass)
-    ? "WIS"
-    : [7, 8, 9, 10, 12].includes(characterClass)
-    ? "STR"
-    : [19, 20, 21, 22, 25].includes(characterClass)
-    ? "AGI"
-    : "LUK";
+      ? "WIS"
+      : [7, 8, 9, 10, 12].includes(characterClass)
+        ? "STR"
+        : [19, 20, 21, 22, 25].includes(characterClass)
+          ? "AGI"
+          : "LUK";
   const preferredStat =
     cheatConfig.wide.perfectobols.preferredstat === "PRIMARY"
       ? primaryStat
