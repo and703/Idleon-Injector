@@ -1,0 +1,22 @@
+{
+  "name": "legends-of-idleon-cheats",
+  "version": "1.0.0",
+  "description": "Idleon cheats",
+  "main": "main.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "atob": "^2.1.2",
+    "btoa": "^1.2.1",
+    "child_process": "^1.0.2",
+    "chrome-remote-interface": "^0.31.3",
+    "data-store": "^3.1.0",
+    "enquirer": "^2.3.6",
+    "lodash": "^4.17.21",
+    "prompt": "^1.3.0"
+  },
+  "scripts": {
+    "build": "pkg main.js -t node18-win-x64 --compress Gzip --output InjectCheatsF5.exe"
+  }
+}
