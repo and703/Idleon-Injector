@@ -24,8 +24,7 @@ async function gameReady() {
     !this["com.stencyl.Engine"].hasOwnProperty("engine") ||
     !this["com.stencyl.Engine"].engine.hasOwnProperty("scene") ||
     !this["com.stencyl.Engine"].engine.sceneInitialized ||
-    this["com.stencyl.Engine"].engine.behaviors.behaviors[0].script
-      ._CloudLoadComplete !== 1
+    this["com.stencyl.Engine"].engine.behaviors.behaviors[0].script._CloudLoadComplete !== 1
   ) {
     console.log("Waiting", this);
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -77,35 +76,24 @@ function registerCheat(command, fn, message) {
 function registerCheats(cheatMap, higherKeys = []) {
   const cmd = higherKeys.concat(cheatMap.name).join(" ");
   let stateObject = higherKeys.reduce((obj, key) => obj[key], cheatState);
-  stateObject[cheatMap.name] = cheatMap.hasOwnProperty("subcheats")
-    ? {}
-    : false;
-  cheatMap["canToggleSubcheats"]
-    ? (stateObject[cheatMap.name + "s"] = false)
-    : null;
+  stateObject[cheatMap.name] = cheatMap.hasOwnProperty("subcheats") ? {} : false;
+  cheatMap["canToggleSubcheats"] ? (stateObject[cheatMap.name + "s"] = false) : null;
 
   let fn = function (params) {
     // cheat uses a custom function
     if (cheatMap.hasOwnProperty("fn"))
-      return cheatMap.fn.call(
-        this,
-        higherKeys.concat(cheatMap.name).concat(params).splice(1)
-      );
+      return cheatMap.fn.call(this, higherKeys.concat(cheatMap.name).concat(params).splice(1));
 
     if (params.length > 0) {
       if (!cheatMap.hasOwnProperty("configurable"))
         return (
           `Wrong subcommand, use one of these:\n` +
-          cheatMap.subcheats
-            .map((p) => `${cmd} ${p.name} (${p.message})`)
-            .join("\n")
+          cheatMap.subcheats.map((p) => `${cmd} ${p.name} (${p.message})`).join("\n")
         );
 
       let config = higherKeys.reduce((obj, key) => obj[key], cheatConfig);
 
-      let val = params
-        .slice(cheatMap.configurable["isObject"] ? 1 : 0)
-        .join(" ");
+      let val = params.slice(cheatMap.configurable["isObject"] ? 1 : 0).join(" ");
       if (val === "")
         return `Invalid value, must be a boolean, number or function that returns a number.`;
       try {
@@ -129,29 +117,23 @@ function registerCheats(cheatMap, higherKeys = []) {
       for (const i in stateObject[cheatMap.name])
         stateObject[cheatMap.name][i] = !stateObject[cheatMap.name + "s"];
       stateObject[cheatMap.name + "s"] = !stateObject[cheatMap.name + "s"];
-      return `${stateObject[cheatMap.name + "s"] ? "Activated" : "Deactived"} ${
-        cheatMap.message
-      }`;
+      return `${stateObject[cheatMap.name + "s"] ? "Activated" : "Deactived"} ${cheatMap.message}`;
     }
 
     stateObject[cheatMap.name] = !stateObject[cheatMap.name];
-    return `${stateObject[cheatMap.name] ? "Activated" : "Deactived"} ${
-      cheatMap.message
-    }.`;
+    return `${stateObject[cheatMap.name] ? "Activated" : "Deactived"} ${cheatMap.message}.`;
   };
   registerCheat(cmd, fn, cheatMap["message"]);
 
   if (cheatMap.hasOwnProperty("subcheats")) {
-    cheatMap.subcheats.forEach((map) =>
-      registerCheats(map, higherKeys.concat(cheatMap.name))
-    );
+    cheatMap.subcheats.forEach((map) => registerCheats(map, higherKeys.concat(cheatMap.name)));
   }
 }
 
 /****************************************************************************************************
-	Registering available cheats:
-	Start things off with the relatively safe cheats.
-	Though the drop function itself is safe, dropping unreleased items obviously isn't!
+  Registering available cheats:
+  Start things off with the relatively safe cheats.
+  Though the drop function itself is safe, dropping unreleased items obviously isn't!
 */
 // Show all available cheats, this one's as safe as it can get xD
 registerCheat(
@@ -159,9 +141,7 @@ registerCheat(
   function (params) {
     let cheatsAvailable = [];
     Object.keys(cheats).forEach((cheat) => {
-      cheatsAvailable.push(
-        cheat + (cheats[cheat]["message"] ? ` (${cheats[cheat].message})` : "")
-      );
+      cheatsAvailable.push(cheat + (cheats[cheat]["message"] ? ` (${cheats[cheat].message})` : ""));
     });
     return cheatsAvailable.join("\n");
   },
@@ -174,9 +154,7 @@ registerCheat(
   function (params) {
     const actorEvents189 = events(189);
     const character =
-      bEngine.getGameAttribute("OtherPlayers").h[
-        bEngine.getGameAttribute("UserInfo")[0]
-      ];
+      bEngine.getGameAttribute("OtherPlayers").h[bEngine.getGameAttribute("UserInfo")[0]];
 
     const item = params[0];
     const amount = params[1] || 1;
@@ -188,34 +166,10 @@ registerCheat(
         let x = character.getXCenter();
         let y = character.getValue("ActorEvents_20", "_PlayerNode");
         if (item.includes("SmithingRecipes"))
-          actorEvents189._customBlock_DropSomething(
-            item,
-            0,
-            amount,
-            0,
-            2,
-            y,
-            0,
-            x,
-            y
-          );
-        else
-          actorEvents189._customBlock_DropSomething(
-            item,
-            amount,
-            0,
-            0,
-            2,
-            y,
-            0,
-            x,
-            y
-          );
+          actorEvents189._customBlock_DropSomething(item, 0, amount, 0, 2, y, 0, x, y);
+        else actorEvents189._customBlock_DropSomething(item, amount, 0, 0, 2, y, 0, x, y);
         cheatConfig.wide.autoloot.tochest = toChest;
-        return `Dropped ${itemDefinition.h.displayName.replace(
-          /_/g,
-          " "
-        )}. (x${amount})`;
+        return `Dropped ${itemDefinition.h.displayName.replace(/_/g, " ")}. (x${amount})`;
       } else return `No item found for '${item}'`;
     } catch (err) {
       return `Error: ${err}`;
@@ -232,9 +186,7 @@ registerCheat(
     const monster = params[0];
     const spawnAmnt = params[1] || 1;
     const character =
-      bEngine.getGameAttribute("OtherPlayers").h[
-        bEngine.getGameAttribute("UserInfo")[0]
-      ];
+      bEngine.getGameAttribute("OtherPlayers").h[bEngine.getGameAttribute("UserInfo")[0]];
     try {
       const monsterDefinition = monsterDefs[monster];
       if (monsterDefinition) {
@@ -242,10 +194,7 @@ registerCheat(
         let y = character.getValue("ActorEvents_20", "_PlayerNode");
         for (let i = 0; i < spawnAmnt; i++)
           ActorEvents124._customBlock_CreateMonster(monster, y, x);
-        return `Spawned ${monsterDefinition.h["Name"].replace(
-          /_/g,
-          " "
-        )} ${spawnAmnt} time(s)`;
+        return `Spawned ${monsterDefinition.h["Name"].replace(/_/g, " ")} ${spawnAmnt} time(s)`;
       } else return `No monster found for '${monster}'`;
     } catch (err) {
       return `Error: ${err}`;
@@ -296,11 +245,7 @@ registerCheats({
         name,
         message: code,
         fn: function () {
-          this["FirebaseStorage"].addToMessageQueue(
-            "SERVER_CODE",
-            "SERVER_ITEM_BUNDLE",
-            code
-          );
+          this["FirebaseStorage"].addToMessageQueue("SERVER_CODE", "SERVER_ITEM_BUNDLE", code);
           return `${name}${desc ? ` (${desc})` : ""} has been bought!`;
         },
       });
@@ -363,10 +308,10 @@ registerCheats({
 });
 
 /****************************************************************************************************
-	The following commands have not been tested properly and/or are definitely dangerous to use
-	Use these only if you don't care about shadow ban and/or have the confidence in some...
-	Functions such as spawn, godlike and nullify don't directly modify the account info...
-	...and may be safe to use to some degree. (No guarantees!!)
+  The following commands have not been tested properly and/or are definitely dangerous to use
+  Use these only if you don't care about shadow ban and/or have the confidence in some...
+  Functions such as spawn, godlike and nullify don't directly modify the account info...
+  ...and may be safe to use to some degree. (No guarantees!!)
 */
 // Account-wide cheats
 registerCheats({
@@ -468,8 +413,7 @@ registerCheats({
     { name: "stampcost", message: "stamp cost nullification." },
     {
       name: "smith",
-      message:
-        "smithing cost nullification (change maps to have the effect apply).",
+      message: "smithing cost nullification (change maps to have the effect apply).",
     },
     { name: "companion", message: "Enable companion", configurable: true },
   ],
@@ -527,8 +471,7 @@ registerCheats({
     { name: "petupgrades", message: "free pet upgrades." },
     {
       name: "petrng",
-      message:
-        "max strength pets (for level and egg, with a tiny bit of randomness).",
+      message: "max strength pets (for level and egg, with a tiny bit of randomness).",
     },
     {
       name: "superpets",
@@ -660,8 +603,7 @@ registerCheat(
       if (char < 0 || char > 9)
         return `Please choose a ninja twin to generate item, 0 -> first char, 1 -> second char.`;
       try {
-        loopTimes =
-          params[1] && parseInt(params[1]) > 0 ? parseInt(params[1]) : 1;
+        loopTimes = params[1] && parseInt(params[1]) > 0 ? parseInt(params[1]) : 1;
         const actorEvents579 = events(579);
         let n = 0;
         while (n < loopTimes) {
@@ -717,8 +659,7 @@ registerCheats({
     { name: "crit", message: "crit set to 100" },
     {
       name: "ability",
-      message:
-        "zero ability cooldown, mana cost nullification and cast time 0.1s.",
+      message: "zero ability cooldown, mana cost nullification and cast time 0.1s.",
     },
     { name: "food", message: "food deduction nullification" },
     { name: "hitchance", message: "hitchance set to 100" },
@@ -728,8 +669,7 @@ registerCheats({
       message: "weapon super speed",
       fn: function (params) {
         for (const [index, element] of Object.entries(itemDefs))
-          if (element.h["typeGen"] === "aWeapon")
-            itemDefs[index].h["Speed"] = params[1] || 9;
+          if (element.h["typeGen"] === "aWeapon") itemDefs[index].h["Speed"] = params[1] || 9;
         return `All weapon speed are up to Turbo. \nThe max speed parameter you can set is 14: Higher will cause a non-attacking bug.`;
       },
     },
@@ -739,17 +679,10 @@ registerCheats({
         "Efaunt, Chaotic Efaunt, Dr Defecaus, Oak Tree and Copper are altered with insane stats",
       fn: function (params) {
         const CardStuff = CList["CardStuff"];
-        const TargetCards = [
-          "Boss2A",
-          "Boss2B",
-          "poopBig",
-          "OakTree",
-          "Copper",
-        ];
+        const TargetCards = ["Boss2A", "Boss2B", "poopBig", "OakTree", "Copper"];
         for (const [key1, value1] of Object.entries(CardStuff))
           for (const [key2, value2] of Object.entries(value1))
-            if (TargetCards.includes(value2[0]))
-              CardStuff[key1][key2][4] = "10000";
+            if (TargetCards.includes(value2[0])) CardStuff[key1][key2][4] = "10000";
         return `The cards Efaunt, Chaotic Efaunt, Dr Defecaus, Oak Tree and Copper have been altered with insane stats.`;
       },
     },
@@ -768,19 +701,13 @@ registerCheat(
       (regex = new RegExp(params[0])) &&
       Object.keys(itemDefs).filter((item) => regex.test(item)).length > 0
     ) {
-      cheatConfig.nomore.items
-        .map((r) => r.toString())
-        .includes(regex.toString())
+      cheatConfig.nomore.items.map((r) => r.toString()).includes(regex.toString())
         ? cheatConfig.nomore.items.splice(
-            cheatConfig.nomore.items
-              .map((r) => r.toString())
-              .indexOf(regex.toString()),
+            cheatConfig.nomore.items.map((r) => r.toString()).indexOf(regex.toString()),
             1
           )
         : cheatConfig.nomore.items.push(regex);
-      return `${params[0]} will ${
-        cheatConfig.nomore.items.includes(regex) ? "not " : ""
-      }drop.`;
+      return `${params[0]} will ${cheatConfig.nomore.items.includes(regex) ? "not " : ""}drop.`;
     } else {
       return `Item not found`;
     }
@@ -808,8 +735,7 @@ registerCheats({
       message: "100% upgrade stone success (safe)",
       fn: function (params) {
         for (const [index, element] of Object.entries(itemDefs))
-          if (element.h["typeGen"] === "dStone")
-            itemDefs[index].h["Amount"] = 100;
+          if (element.h["typeGen"] === "dStone") itemDefs[index].h["Amount"] = 100;
         return `All upgrade stones have 100% success chance.`;
       },
     },
@@ -818,8 +744,7 @@ registerCheats({
       message: "Upgrade stone doesn't use a slot (risky)",
       fn: function (params) {
         for (const [index, element] of Object.entries(itemDefs))
-          if (element.h["typeGen"] === "dStone")
-            itemDefs[index].h["Trigger"] = 0;
+          if (element.h["typeGen"] === "dStone") itemDefs[index].h["Trigger"] = 0;
         return `Using an upgrade stone doesn't deduct remaining upgrade amount on an item.`;
       },
     },
@@ -840,33 +765,28 @@ registerCheats({
       name: "damage",
       message: "Multiplies damage by the number given (use reasonably!)",
       configurable: {
-        valueTransformer: (val) =>
-          !isNaN(val) ? new Function(`t => t * ${val}`)() : val,
+        valueTransformer: (val) => (!isNaN(val) ? new Function(`t => t * ${val}`)() : val),
       },
     },
     {
       name: "efficiency",
-      message:
-        "Multiplies skill efficiency by the number given (use reasonably!)",
+      message: "Multiplies skill efficiency by the number given (use reasonably!)",
       configurable: {
-        valueTransformer: (val) =>
-          !isNaN(val) ? new Function(`t => t * ${val}`)() : val,
+        valueTransformer: (val) => (!isNaN(val) ? new Function(`t => t * ${val}`)() : val),
       },
     },
     {
       name: "afk",
       message: "Multiplies AFK % by the number given (use reasonably!)",
       configurable: {
-        valueTransformer: (val) =>
-          !isNaN(val) ? new Function(`t => t * ${val}`)() : val,
+        valueTransformer: (val) => (!isNaN(val) ? new Function(`t => t * ${val}`)() : val),
       },
     },
     {
       name: "drop",
       message: "Multiplies drop rate by the number given (use reasonably!)",
       configurable: {
-        valueTransformer: (val) =>
-          !isNaN(val) ? new Function(`t => t * ${val}`)() : val,
+        valueTransformer: (val) => (!isNaN(val) ? new Function(`t => t * ${val}`)() : val),
       },
     },
     {
@@ -876,8 +796,7 @@ registerCheats({
     },
     {
       name: "monsters",
-      message:
-        "Multiplies the number of monsters on the map by the number given",
+      message: "Multiplies the number of monsters on the map by the number given",
       configurable: true,
     },
   ],
@@ -922,9 +841,7 @@ registerCheat(
   function (params) {
     const actorEvents189 = events(189);
     const character =
-      bEngine.getGameAttribute("OtherPlayers").h[
-        bEngine.getGameAttribute("UserInfo")[0]
-      ];
+      bEngine.getGameAttribute("OtherPlayers").h[bEngine.getGameAttribute("UserInfo")[0]];
 
     // Obtaining clusters of items at once (Doesn't return a drop log in the console)
     const items = params[0] || "default";
@@ -937,40 +854,15 @@ registerCheat(
       if (DictDrops[items]) {
         if (items === "startalents")
           DictDrops[items].forEach((item) => {
-            actorEvents189._customBlock_DropSomething(
-              "TalentBook1",
-              item,
-              0,
-              0,
-              2,
-              y,
-              0,
-              x,
-              y
-            );
+            actorEvents189._customBlock_DropSomething("TalentBook1", item, 0, 0, 2, y, 0, x, y);
             drop_log.push(`Dropped talent book with id ${item}`);
           });
         if (items === "smith") {
           DictDrops[items].forEach((item) => {
             // Drop the regular items
             if (itemDefs[item]) {
-              actorEvents189._customBlock_DropSomething(
-                item,
-                1,
-                0,
-                0,
-                2,
-                y,
-                0,
-                x,
-                y
-              );
-              drop_log.push(
-                `Dropped ${itemDefs[item].h.displayName.replace(
-                  /_/g,
-                  " "
-                )}. (x${1})`
-              );
+              actorEvents189._customBlock_DropSomething(item, 1, 0, 0, 2, y, 0, x, y);
+              drop_log.push(`Dropped ${itemDefs[item].h.displayName.replace(/_/g, " ")}. (x${1})`);
             } else drop_log.push(`No item found for '${item}'`);
           });
           //Not really too efficient, must be a better way to deal with this... Since this one's kinda lackluster I'll postphone it for now
@@ -1027,22 +919,9 @@ registerCheat(
         } else
           DictDrops[items].forEach((item) => {
             if (itemDefs[item]) {
-              actorEvents189._customBlock_DropSomething(
-                item,
-                amnt,
-                0,
-                0,
-                2,
-                y,
-                0,
-                x,
-                y
-              );
+              actorEvents189._customBlock_DropSomething(item, amnt, 0, 0, 2, y, 0, x, y);
               drop_log.push(
-                `Dropped ${itemDefs[item].h.displayName.replace(
-                  /_/g,
-                  " "
-                )}. (x${amnt})`
+                `Dropped ${itemDefs[item].h.displayName.replace(/_/g, " ")}. (x${amnt})`
               );
             } else drop_log.push(`No item found for '${item}'`);
           });
@@ -1061,16 +940,14 @@ registerCheat(
 );
 
 /****************************************************************************************************
-	Runescape homage cheats: Now we're finally God Gaming xD
+  Runescape homage cheats: Now we're finally God Gaming xD
 */
 registerCheat(
   "runescape",
   function () {
     // Activate ability bar switching when switching weapons
     cheatState.runescape = !cheatState.runescape;
-    return `${
-      cheatState.runescape ? "Activated" : "Deactived"
-    } ability bar switching.`;
+    return `${cheatState.runescape ? "Activated" : "Deactived"} ability bar switching.`;
   },
   "Switches ability bar when switching weapons."
 );
@@ -1082,10 +959,7 @@ registerCheat(
     const AttackLoadout = bEngine.getGameAttribute("AttackLoadout");
     bEngine.whenAnyKeyPressedListeners.push(function (e, t) {
       if (
-        (e.keyCode === 65 ||
-          e.keyCode === 83 ||
-          e.keyCode === 68 ||
-          e.keyCode === 70) &&
+        (e.keyCode === 65 || e.keyCode === 83 || e.keyCode === 68 || e.keyCode === 70) &&
         bEngine.getGameAttribute("MenuType") === 6
       ) {
         const BiS = {
@@ -1105,8 +979,7 @@ registerCheat(
           EquipMap[1].h["Upgrade_Slots_Left"] = upgrslots * -1; // Deduct the amount of slots left
           EquipMap[1].h["Weapon_Power"] = upgrslots * upgrstats["Weapon_Power"];
           EquipMap[1].h["Defence"] = upgrslots * upgrstats["Defence"];
-          EquipMap[1].h[BiS[e.keyCode][0]] =
-            upgrslots * upgrstats["Random_Stat"];
+          EquipMap[1].h[BiS[e.keyCode][0]] = upgrslots * upgrstats["Random_Stat"];
         }
         if (cheatState.runescape) {
           // Let's play Runescape xD
@@ -1181,24 +1054,17 @@ registerCheat(
     (function () {
       this._TRIGGEREDtext = "a6";
       this._customEvent_PachiStuff2();
-    }).bind(
-      bEngine.gameAttributes.h.PixelHelperActor[21].behaviors.behaviors[0]
-        .script
-    )();
+    }).bind(bEngine.gameAttributes.h.PixelHelperActor[21].behaviors.behaviors[0].script)();
     return "JACKPOT!!!";
   },
   "Hit the jackpot in the arcade"
 );
 
-registerCheat(
-  "chromedebug",
-  () => {},
-  "Open the game in a chrome debug console"
-); //handled in the executable
+registerCheat("chromedebug", () => {}, "Open the game in a chrome debug console"); //handled in the executable
 
 /****************************************************************************************************
-	The following functions only aggregate information from the game's data structures.
-	As such, these functions are perfectly safe.
+  The following functions only aggregate information from the game's data structures.
+  As such, these functions are perfectly safe.
 */
 // Search by item, monster or talent name: All in lowercase!
 registerCheats({
@@ -1255,8 +1121,7 @@ registerCheats({
         const Order = CList["TalentOrder"];
         for (let i = 0; i < Order.length; i++) {
           const valName = talentDefs[Order[i]].replace(/_/g, " ").toLowerCase();
-          if (valName.includes(queryX))
-            searchVals.push(`${i} - ${Order[i]} - ${valName}`);
+          if (valName.includes(queryX)) searchVals.push(`${i} - ${Order[i]} - ${valName}`);
         }
         if (searchVals.length > 0) return searchVals.join("\n");
         else return `No info found for '${queryX}'`;
@@ -1282,9 +1147,7 @@ registerCheats({
           for (i = 0; i < ItemToCraftNAME.length; i++)
             for (j = 0; j < ItemToCraftNAME[i].length; j++)
               if (ItemVals[h][0] == ItemToCraftNAME[i][j])
-                searchVals.push(
-                  `${i + i}, ${j}, ${ItemVals[h][0]}, ${ItemVals[h][1]}`
-                );
+                searchVals.push(`${i + i}, ${j}, ${ItemVals[h][0]}, ${ItemVals[h][1]}`);
         if (searchVals.length > 0) return searchVals.join("\n");
         else return `No info found for '${queryX}'`;
       },
@@ -1311,8 +1174,7 @@ const listFunction = function (params) {
   } else if (params[0] == "bundle") {
     foundVals.push("Bundle, Message");
     console.log(this["scripts.CustomMapsREAL"].GemPopupBundleMessages());
-    const GemPopupBundleMessages =
-      this["scripts.CustomMapsREAL"].GemPopupBundleMessages().h;
+    const GemPopupBundleMessages = this["scripts.CustomMapsREAL"].GemPopupBundleMessages().h;
     let cleaned;
     for (const [key, value] of Object.entries(GemPopupBundleMessages)) {
       cleaned = value.replace(/_/g, " ");
@@ -1324,8 +1186,7 @@ const listFunction = function (params) {
   } else if (params[0] == "missing_bundle") {
     foundVals.push("Bundle, Message");
     console.log(this["scripts.CustomMapsREAL"].GemPopupBundleMessages());
-    const GemPopupBundleMessages =
-      this["scripts.CustomMapsREAL"].GemPopupBundleMessages().h;
+    const GemPopupBundleMessages = this["scripts.CustomMapsREAL"].GemPopupBundleMessages().h;
     const bundles_received = bEngine.gameAttributes.h.BundlesReceived.h; // dict with the same key as GemPopupBundleMessages value is 0 or 1
     let cleaned;
     for (const [key, value] of Object.entries(GemPopupBundleMessages)) {
@@ -1358,25 +1219,18 @@ const listFunction = function (params) {
       for (const [key2, value2] of Object.entries(value1)) {
         if (monsterDefs[value2[0]])
           foundVals.push(
-            `${value2[0]}, ${monsterDefs[value2[0]].h["Name"]}, ${value2[4]}, ${
-              value2[3]
-            }`
+            `${value2[0]}, ${monsterDefs[value2[0]].h["Name"]}, ${value2[4]}, ${value2[3]}`
           );
-        else
-          foundVals.push(`${value2[0]}, Unknown, ${value2[4]}, ${value2[3]}`);
+        else foundVals.push(`${value2[0]}, Unknown, ${value2[4]}, ${value2[3]}`);
       }
   } else if (params[0] == "class") {
     foundVals.push("Id, ClassName, PromotesTo");
     for (const [index, element] of CList.ClassNames.entries())
-      foundVals.push(
-        `${index}, ${element}, [${CList.ClassPromotionChoices[index]}]`
-      );
+      foundVals.push(`${index}, ${element}, [${CList.ClassPromotionChoices[index]}]`);
   } else if (params[0] == "quest") {
     foundVals.push("Id, QuestName, NPC, QuestlineNo, paramX1");
     for (const [index, element] of CList.SceneNPCquestOrder.entries())
-      foundVals.push(
-        `${element}, ${CList.SceneNPCquestInfo[index].join(", ")}`
-      );
+      foundVals.push(`${element}, ${CList.SceneNPCquestInfo[index].join(", ")}`);
   } else if (params[0] == "map") {
     foundVals.push("Num_Id, Str_Id, MapName, AFK1, AFK2, Transition");
     for (const [index, element] of CList.MapName.entries())
@@ -1411,14 +1265,9 @@ const listFunction = function (params) {
         foundVals.push(`${i + 1}, ${j}, ${ItemToCraftNAME[i][j]}, ${itemName}`);
       }
   } else if ((params[0] = "gga"))
-    for (const [key, val] of Object.entries(bEngine.gameAttributes.h))
-      foundVals.push(key);
-  else
-    return "Valid sub-commands are:\n item\n monster\n class\n quest\n map\n talent\n smith";
-  if (params[1])
-    return foundVals
-      .filter((foundVals) => foundVals.includes(params[1]))
-      .join("\n");
+    for (const [key, val] of Object.entries(bEngine.gameAttributes.h)) foundVals.push(key);
+  else return "Valid sub-commands are:\n item\n monster\n class\n quest\n map\n talent\n smith";
+  if (params[1]) return foundVals.filter((foundVals) => foundVals.includes(params[1])).join("\n");
   return foundVals.join("\n"); // Concatenate all lines into one string with new lines
 };
 registerCheats({
@@ -1507,10 +1356,10 @@ registerCheat(
 );
 
 /* 	Evaluate Get Game Attributes: fill in the variable you'd like to see
-	> egga this["com.stencyl.Engine"].engine.getGameAttribute("Lv0");
-	Under the hood it does: 
-	> let gga = this["com.stencyl.Engine"].engine.getGameAttribute("Lv0");
-	Yeah this function is therefore pretty buggy, don't expect too much out of it xD
+  > egga this["com.stencyl.Engine"].engine.getGameAttribute("Lv0");
+  Under the hood it does: 
+  > let gga = this["com.stencyl.Engine"].engine.getGameAttribute("Lv0");
+  Yeah this function is therefore pretty buggy, don't expect too much out of it xD
 */
 registerCheat(
   "egga",
@@ -1521,11 +1370,8 @@ registerCheat(
     try {
       let gga = eval(params[0]);
       let obj_gga = Object.entries(gga);
-      if (typeof obj_gga == "string" || obj_gga.length == 0)
-        foundVals.push(`${gga}`);
-      else
-        for (const [index, element] of obj_gga)
-          foundVals.push(`${index}, ${element}`);
+      if (typeof obj_gga == "string" || obj_gga.length == 0) foundVals.push(`${gga}`);
+      else for (const [index, element] of obj_gga) foundVals.push(`${index}, ${element}`);
       return foundVals.join("\n");
     } catch (error) {
       // If the gga isn't an Array nor Dictionary.
@@ -1561,10 +1407,10 @@ registerCheat(
   "Show the game key, separate with spaces."
 );
 /****************************************************************************************************
-	These following functions enable you to perform extremely risky value manipulations...
-	...and have insanely high chance of destroying your account. 
+  These following functions enable you to perform extremely risky value manipulations...
+  ...and have insanely high chance of destroying your account. 
  
-	Only use these when you know what you're doing!!
+  Only use these when you know what you're doing!!
 */
 // Stop/restart cloud saving
 registerCheat(
@@ -1581,18 +1427,14 @@ registerCheat(
 const wipeFunction = function (params) {
   if (params[0] === "inv") {
     const wipedef = bEngine.getGameAttribute("InventoryOrder");
-    for (const [index, element] of Object.entries(wipedef))
-      wipedef[index] = "Blank";
+    for (const [index, element] of Object.entries(wipedef)) wipedef[index] = "Blank";
     return "The inventory has been wiped.";
   } else if (params[0] == "chest") {
     const wipedef = bEngine.getGameAttribute("ChestOrder");
-    for (const [index, element] of Object.entries(wipedef))
-      wipedef[index] = "Blank";
+    for (const [index, element] of Object.entries(wipedef)) wipedef[index] = "Blank";
     return "Wipe chest could result in a crash: Should be fine after restart.";
   } else if (params[0] === "forge") {
-    for (const [index, element] of Object.entries(
-      bEngine.getGameAttribute("ForgeItemOrder")
-    )) {
+    for (const [index, element] of Object.entries(bEngine.getGameAttribute("ForgeItemOrder"))) {
       bEngine.getGameAttribute("ForgeItemOrder")[index] = "Blank";
       bEngine.getGameAttribute("ForgeItemQuantity")[index] = 0;
     }
@@ -1611,9 +1453,7 @@ const wipeFunction = function (params) {
       });
     });
     maxItems.forEach(function (numberAllowed, index) {
-      if (
-        bEngine.getGameAttribute("GemItemsPurchased")[index] > numberAllowed
-      ) {
+      if (bEngine.getGameAttribute("GemItemsPurchased")[index] > numberAllowed) {
         bEngine.getGameAttribute("GemItemsPurchased")[index] = numberAllowed;
       }
     });
@@ -1636,13 +1476,10 @@ const wipeFunction = function (params) {
           ((bEngine.gameAttributes.h.CogOrder[k] = "Blank"),
           bEngine.gameAttributes.h.CogMap[k]
             .keys()
-            .keys.forEach(
-              (a) => delete bEngine.gameAttributes.h.CogMap[k].h[a]
-            ))
+            .keys.forEach((a) => delete bEngine.gameAttributes.h.CogMap[k].h[a]))
       );
     }
-  } else
-    return "Unknown sub-command given\nKnown sub-commands are 'inv', 'chest', 'forge'.";
+  } else return "Unknown sub-command given\nKnown sub-commands are 'inv', 'chest', 'forge'.";
 };
 registerCheats({
   name: "wipe",
@@ -1653,8 +1490,7 @@ registerCheats({
     { name: "forge", message: "Wipe your forge.", fn: wipeFunction },
     {
       name: "overpurchases",
-      message:
-        "Set all overpurchased items in the gem shop to their max safe value.",
+      message: "Set all overpurchased items in the gem shop to their max safe value.",
       fn: wipeFunction,
     },
     { name: "cogs", message: "Remove all unused cogs", fn: wipeFunction },
@@ -1786,14 +1622,7 @@ registerCheats({
         const lvltype = params[0];
         const setlvl = parseInt(params[1]) || -1;
         if (setlvl == -1) return `The lvl value has to be numeric!`; // Yup this is a dummy-proof measurement to prevent account bricking
-        bEngine.setGameAttribute("FurnaceLevels", [
-          16,
-          setlvl,
-          setlvl,
-          setlvl,
-          setlvl,
-          setlvl,
-        ]);
+        bEngine.setGameAttribute("FurnaceLevels", [16, setlvl, setlvl, setlvl, setlvl, setlvl]);
         return `${lvltype} has been changed to ${setlvl}.`;
       },
     },
@@ -1803,9 +1632,7 @@ registerCheats({
       fn: function (params) {
         const setlvl = parseInt(params[1]) || -1;
         if (setlvl == -1) return `The lvl value has to be numeric!`; // Yup this is a dummy-proof measurement to prevent account bricking
-        bEngine
-          .getGameAttribute("StatueLevels")
-          .forEach((item) => (item[0] = setlvl));
+        bEngine.getGameAttribute("StatueLevels").forEach((item) => (item[0] = setlvl));
         return `Statue has been changed to ${setlvl}.`;
       },
     },
@@ -1880,21 +1707,16 @@ const alchFn = function (params) {
   };
   const setlvl = params[1] || 1000;
   if (Object.keys(alchdict).includes(params[0])) {
-    const tochange =
-      bEngine.getGameAttribute("CauldronInfo")[alchdict[params[0]]];
+    const tochange = bEngine.getGameAttribute("CauldronInfo")[alchdict[params[0]]];
     if (params[0] === "upgrade") {
       for (const [index1, element1] of Object.entries(tochange))
         for (const [index2, element2] of Object.entries(element1))
           tochange[index1][index2][1] = setlvl;
       return `All cauldron upgrades set to lvl ${setlvl}`;
     } // No need to else, as there's a return
-    for (const [index, element] of Object.entries(tochange))
-      tochange[index] = setlvl;
+    for (const [index, element] of Object.entries(tochange)) tochange[index] = setlvl;
     return `All ${params[0]} levels have changed to ${setlvl}.`;
-  } else
-    return `Wrong sub-command, use one of these:\n${Object.keys(alchdict).join(
-      ", "
-    )}`;
+  } else return `Wrong sub-command, use one of these:\n${Object.keys(alchdict).join(", ")}`;
 };
 registerCheats({
   name: "setalch",
@@ -2017,7 +1839,7 @@ registerCheat(
 );
 
 /****************************************************************************************************
-	A proxy setup and all Proxy definitions
+  A proxy setup and all Proxy definitions
 */
 async function setup() {
   if (setupDone) return "Cheat setup complete";
@@ -2119,8 +1941,7 @@ function setupBehaviorScriptProxies() {
         if (
           cheatState.godlike.intervention &&
           argumentsList[0] == 2400 &&
-          argumentsList[2]["behaviors"]["behaviors"][0]["name"] ==
-            "ActorEvents_481"
+          argumentsList[2]["behaviors"]["behaviors"][0]["name"] == "ActorEvents_481"
         ) {
           argumentsList[0] = 0;
         }
@@ -2147,8 +1968,7 @@ function setupBehaviorScriptProxies() {
         if (
           cheatState.godlike.poison &&
           argumentsList[0] == 2e3 &&
-          argumentsList[2]["behaviors"]["behaviors"][0]["name"] ==
-            "ActorEvents_575"
+          argumentsList[2]["behaviors"]["behaviors"][0]["name"] == "ActorEvents_575"
         ) {
           argumentsList[0] = 5;
         }
@@ -2176,18 +1996,14 @@ function setupAutoLootProxy() {
         actorEvents345._customBlock_Dungon() === -1 &&
         bEngine.getGameAttribute("ItemDefinitionsGET").h[context._DropType] &&
         (/.*(LOG|ORE|LEAF|FISH|BUG|CRITTER|SOUL|FOOD|STATUE|TELEPORT|FISHING_ACCESSORY|OFFICE_PEN|BOSS_KEY|FRAGMENT|UPGRADE|MONSTER_DROP|MATERIAL|CARD).*/i.test(
-          bEngine.getGameAttribute("ItemDefinitionsGET").h[context._DropType].h
-            .Type
+          bEngine.getGameAttribute("ItemDefinitionsGET").h[context._DropType].h.Type
         ) ||
           ["COIN", "Quest22", "Quest23", "Quest24"].includes(context._DropType))
       ) {
         context._CollectedStatus = 0;
         bEngine.gameAttributes.h.DummyNumber4 = 23.34;
         context._customEvent_ItemPickupInTheFirstPlace();
-        if (
-          context._DropType == "COIN" ||
-          context._DropType.substring(0, 5) == "Cards"
-        ) {
+        if (context._DropType == "COIN" || context._DropType.substring(0, 5) == "Cards") {
           cheatConfig.wide.autoloot.tochest && context._DropType == "COIN"
             ? (bEngine.gameAttributes.h.MoneyBANK =
                 bEngine.getGameAttribute("MoneyBANK") + context._DropAmount)
@@ -2199,29 +2015,20 @@ function setupAutoLootProxy() {
         }
         if (cheatConfig.wide.autoloot.tochest) {
           let chestSlot =
-            bEngine.getGameAttribute("ChestOrder").indexOf(context._DropType) !=
-            -1
-              ? bEngine
-                  .getGameAttribute("ChestOrder")
-                  .indexOf(context._DropType)
+            bEngine.getGameAttribute("ChestOrder").indexOf(context._DropType) != -1
+              ? bEngine.getGameAttribute("ChestOrder").indexOf(context._DropType)
               : bEngine.getGameAttribute("ChestOrder").indexOf("Blank");
           if (bEngine.getGameAttribute("ChestOrder")[chestSlot] == "Blank")
-            bEngine.getGameAttribute("ChestOrder")[chestSlot] =
-              context._DropType;
-          let inventorySlot = bEngine
-            .getGameAttribute("InventoryOrder")
-            .indexOf(context._DropType);
+            bEngine.getGameAttribute("ChestOrder")[chestSlot] = context._DropType;
+          let inventorySlot = bEngine.getGameAttribute("InventoryOrder").indexOf(context._DropType);
           while (chestSlot !== -1 && inventorySlot !== -1) {
             bEngine.getGameAttribute("ChestQuantity")[chestSlot] +=
               bEngine.getGameAttribute("ItemQuantity")[inventorySlot];
             bEngine.getGameAttribute("ItemQuantity")[inventorySlot] = 0;
             bEngine.getGameAttribute("InventoryOrder")[inventorySlot] = "Blank";
-            inventorySlot = bEngine
-              .getGameAttribute("InventoryOrder")
-              .indexOf(context._DropType);
+            inventorySlot = bEngine.getGameAttribute("InventoryOrder").indexOf(context._DropType);
           }
-          bEngine.getGameAttribute("ChestQuantity")[chestSlot] +=
-            context._DropAmount;
+          bEngine.getGameAttribute("ChestQuantity")[chestSlot] += context._DropAmount;
           context._DropAmount = 0;
         }
         if (context._DropAmount == 0) {
@@ -2286,22 +2093,16 @@ function setupAutoLootProxy() {
 
   // Proxy:
   const hxOverrides = this["HxOverrides"];
-  events(34).prototype._event_ItemGet = new Proxy(
-    events(34).prototype._event_ItemGet,
-    {
-      apply: function (originalFn, context, argumentsList) {
-        return cheatState.wide.autoloot &&
-          cheatConfig.wide.autoloot.hidenotifications &&
-          [0, 1].includes(context._Deployment)
-          ? (hxOverrides.remove(
-              bEngine.getGameAttribute("ItemGetPixelQueue"),
-              context.actor
-            ),
-            behavior.recycleActor(context.actor))
-          : Reflect.apply(originalFn, context, argumentsList);
-      },
-    }
-  );
+  events(34).prototype._event_ItemGet = new Proxy(events(34).prototype._event_ItemGet, {
+    apply: function (originalFn, context, argumentsList) {
+      return cheatState.wide.autoloot &&
+        cheatConfig.wide.autoloot.hidenotifications &&
+        [0, 1].includes(context._Deployment)
+        ? (hxOverrides.remove(bEngine.getGameAttribute("ItemGetPixelQueue"), context.actor),
+          behavior.recycleActor(context.actor))
+        : Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
 
   // const hxOverrides = this["HxOverrides"];
   // const eventItemGet = events(34).prototype._event_ItemGet;
@@ -2316,9 +2117,7 @@ function setupCreateElementProxy() {
   this.React.createElement = new Proxy(this.React.createElement, {
     apply: function (originalFn, context, argumentsList) {
       if (cheatState.w1.companion && argumentsList[0].includes("Companion")) {
-        if (
-          ["deleteCompanion", "swapCompanionOrder"].includes(argumentsList[0])
-        )
+        if (["deleteCompanion", "swapCompanionOrder"].includes(argumentsList[0]))
           return new Promise((resolve) => resolve(1));
         if (argumentsList[0] == "setCompanionFollower") {
           cheatConfig.w1.companion.current = string(argumentsList[1]);
@@ -2340,9 +2139,7 @@ function setupCreateElementProxy() {
         let resp = Reflect.apply(originalFn, context, argumentsList);
         if (resp.length > 0 && resp.length < 10) {
           let playersToAdd = 11 - resp.length;
-          let names = Object.keys(
-            bEngine.gameAttributes.h.OtherPlayers.h
-          ).slice(1, playersToAdd);
+          let names = Object.keys(bEngine.gameAttributes.h.OtherPlayers.h).slice(1, playersToAdd);
           names.forEach(function (name) {
             resp.push([name, resp[0][1], 0]);
           });
@@ -2358,39 +2155,31 @@ function setupCreateElementProxy() {
 
 // Proxy for Mystery Stones always hitting the Misc stat if possible.
 function setupItemMiscProxy() {
-  events(38).prototype._event_InventoryItem = new Proxy(
-    events(38).prototype._event_InventoryItem,
-    {
-      apply: function (originalFn, context, argumentsList) {
-        const inventoryOrder = bEngine.getGameAttribute("InventoryOrder");
-        try {
-          if (
-            cheatState.upstones.misc &&
-            itemDefs[
-              inventoryOrder[
-                context.actor.getValue("ActorEvents_38", "_ItemDragID")
-              ]
-            ].h.typeGen == "dStone" &&
-            itemDefs[
-              inventoryOrder[
-                context.actor.getValue("ActorEvents_38", "_ItemDragID")
-              ]
-            ].h.Effect.startsWith("Mystery_Stat")
-          ) {
-            cheatState["rng"] = 0.85; // First random roll for Misc stat.
-            cheatState["rngInt"] = "high"; // 2nd random roll for positive value.
-            let rtn = Reflect.apply(originalFn, context, argumentsList);
-            cheatState["rng"] = false;
-            cheatState["rngInt"] = false;
-            return rtn;
-          }
-        } catch (e) {
-          console.error("Error in _event_InventoryItem proxy:", e);
+  events(38).prototype._event_InventoryItem = new Proxy(events(38).prototype._event_InventoryItem, {
+    apply: function (originalFn, context, argumentsList) {
+      const inventoryOrder = bEngine.getGameAttribute("InventoryOrder");
+      try {
+        if (
+          cheatState.upstones.misc &&
+          itemDefs[inventoryOrder[context.actor.getValue("ActorEvents_38", "_ItemDragID")]].h
+            .typeGen == "dStone" &&
+          itemDefs[
+            inventoryOrder[context.actor.getValue("ActorEvents_38", "_ItemDragID")]
+          ].h.Effect.startsWith("Mystery_Stat")
+        ) {
+          cheatState["rng"] = 0.85; // First random roll for Misc stat.
+          cheatState["rngInt"] = "high"; // 2nd random roll for positive value.
+          let rtn = Reflect.apply(originalFn, context, argumentsList);
+          cheatState["rng"] = false;
+          cheatState["rngInt"] = false;
+          return rtn;
         }
-        return Reflect.apply(originalFn, context, argumentsList);
-      },
-    }
-  );
+      } catch (e) {
+        console.error("Error in _event_InventoryItem proxy:", e);
+      }
+      return Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
 }
 
 function setupItemMoveProxy() {
@@ -2402,11 +2191,8 @@ function setupItemMoveProxy() {
         try {
           if (
             cheatState.wide.candy &&
-            itemDefs[
-              inventoryOrder[
-                context.actor.getValue("ActorEvents_38", "_ItemDragID")
-              ]
-            ].h.Type == "TIME_CANDY"
+            itemDefs[inventoryOrder[context.actor.getValue("ActorEvents_38", "_ItemDragID")]].h
+              .Type == "TIME_CANDY"
           ) {
             let originalMap = bEngine.getGameAttribute("CurrentMap");
             let originalTarget = bEngine.getGameAttribute("AFKtarget");
@@ -2440,18 +2226,13 @@ function setupItemMoveProxy() {
             cheatState.unlock.divinitypearl &&
             context.actor.getValue("ActorEvents_38", "_PixelType") == 2 &&
             context.actor.getValue("ActorEvents_38", "_DummyType2Dead") == 7 &&
-            inventoryOrder[
-              context.actor.getValue("ActorEvents_38", "_ItemDragID")
-            ] == "Pearl6"
+            inventoryOrder[context.actor.getValue("ActorEvents_38", "_ItemDragID")] == "Pearl6"
           ) {
             let calls = 0;
             const levels = bEngine.gameAttributes.h["Lv0"];
             bEngine.gameAttributes.h["Lv0"] = new Proxy(levels, {
               get: function (target, name) {
-                if (
-                  name == bEngine.getGameAttribute("DummyNumber3") &&
-                  calls < 2
-                ) {
+                if (name == bEngine.getGameAttribute("DummyNumber3") && calls < 2) {
                   calls = calls + 1;
                   if (calls == 2) {
                     bEngine.gameAttributes.h["Lv0"] = levels;
@@ -2485,14 +2266,8 @@ function setupMonsterProxy() {
 
   behavior.getValueForScene = new Proxy(behavior.getValueForScene, {
     apply: function (originalFn, context, argumentsList) {
-      if (
-        cheatState.multiply.monsters &&
-        argumentsList[1] === "_NumberOfEnemies"
-      ) {
-        return (
-          Reflect.apply(originalFn, context, argumentsList) *
-          cheatConfig.multiply.monsters
-        );
+      if (cheatState.multiply.monsters && argumentsList[1] === "_NumberOfEnemies") {
+        return Reflect.apply(originalFn, context, argumentsList) * cheatConfig.multiply.monsters;
       }
       return Reflect.apply(originalFn, context, argumentsList);
     },
@@ -2797,10 +2572,7 @@ function setupArbitraryProxy() {
     const t = argumentsList[0];
     if (cheatState.w3.worshipspeed && t == "WorshipSpeed") return 5000; // 1000 worship%/h
     if (cheatState.multiply.efficiency && t.includes("Efficiency"))
-      return (
-        Reflect.apply(SkillStats, this, argumentsList) *
-        cheatConfig.multiply.efficiency
-      );
+      return Reflect.apply(SkillStats, this, argumentsList) * cheatConfig.multiply.efficiency;
     return Reflect.apply(SkillStats, this, argumentsList);
   };
 
@@ -2809,10 +2581,7 @@ function setupArbitraryProxy() {
     const t = argumentsList[0];
     if (cheatState.w3.worshipspeed && t == "WorshipSpeed") return 5000; // 1000 worship%/h
     if (cheatState.multiply.efficiency && t.includes("Efficiency"))
-      return (
-        Reflect.apply(SkillStats2, this, argumentsList) *
-        cheatConfig.multiply.efficiency
-      );
+      return Reflect.apply(SkillStats2, this, argumentsList) * cheatConfig.multiply.efficiency;
     return Reflect.apply(SkillStats2, this, argumentsList);
   };
 
@@ -2840,14 +2609,10 @@ function setupArbitraryProxy() {
   };
 
   const generateMonsterDrops = ActorEvents12._customBlock_GenerateMonsterDrops;
-  ActorEvents12._customBlock_GenerateMonsterDrops = function (
-    ...argumentsList
-  ) {
+  ActorEvents12._customBlock_GenerateMonsterDrops = function (...argumentsList) {
     let drops = Reflect.apply(generateMonsterDrops, this, argumentsList);
     // filter out drops where drop[0] matches any regex in itemsNotToDrop
-    drops = drops.filter(
-      (drop) => !cheatConfig.nomore.items.some((regex) => regex.test(drop[0]))
-    );
+    drops = drops.filter((drop) => !cheatConfig.nomore.items.some((regex) => regex.test(drop[0])));
 
     return drops;
   };
@@ -2857,14 +2622,11 @@ function setupCurrenciesOwnedProxy() {
   const currencies = bEngine.getGameAttribute("CurrenciesOwned").h;
   const handler = {
     get: function (obj, prop) {
-      if (cheatState.unlock.teleports && prop === "WorldTeleports")
-        return obj.WorldTeleports || 1;
+      if (cheatState.unlock.teleports && prop === "WorldTeleports") return obj.WorldTeleports || 1;
       if (cheatState.unlock.tickets && prop === "ColosseumTickets")
         return obj.ColosseumTickets || 1;
-      if (cheatState.unlock.obolfrag && prop === "ObolFragments")
-        return obj.ObolFragments || 9001; // It's over nine thousand
-      if (cheatState.unlock.silvpen && prop === "SilverPens")
-        return obj.SilverPens || 1;
+      if (cheatState.unlock.obolfrag && prop === "ObolFragments") return obj.ObolFragments || 9001; // It's over nine thousand
+      if (cheatState.unlock.silvpen && prop === "SilverPens") return obj.SilverPens || 1;
       return obj[prop];
     },
     set: function (obj, prop, value) {
@@ -2889,40 +2651,29 @@ function setupCurrenciesOwnedProxy() {
 }
 // Nullify stamp upgrade cost
 function setupStampCostProxy() {
-  events(124)._customBlock_StampCostss = new Proxy(
-    events(124)._customBlock_StampCostss,
-    {
-      apply: function (originalFn, context, argumentsList) {
-        if (cheatState.w1.stampcost) {
-          const tab = argumentsList[0];
-          const index = argumentsList[1];
-          const currentStampLevel =
-            bEngine.getGameAttribute("StampLevel")[tab][index];
-          const maxStampLevel =
-            bEngine.getGameAttribute("StampLevelMAX")[tab][index];
-          if (currentStampLevel < maxStampLevel) return ["Money", 0];
-          return ["PremiumGem", 0];
-        }
-        return Reflect.apply(originalFn, context, argumentsList);
-      },
-    }
-  );
+  events(124)._customBlock_StampCostss = new Proxy(events(124)._customBlock_StampCostss, {
+    apply: function (originalFn, context, argumentsList) {
+      if (cheatState.w1.stampcost) {
+        const tab = argumentsList[0];
+        const index = argumentsList[1];
+        const currentStampLevel = bEngine.getGameAttribute("StampLevel")[tab][index];
+        const maxStampLevel = bEngine.getGameAttribute("StampLevelMAX")[tab][index];
+        if (currentStampLevel < maxStampLevel) return ["Money", 0];
+        return ["PremiumGem", 0];
+      }
+      return Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
 }
 
 function setupAFKRateProxy() {
-  events(124)._customBlock_AFKgainrates = new Proxy(
-    events(124)._customBlock_AFKgainrates,
-    {
-      apply: (originalFn, context, argumentsList) => {
-        if (cheatState.multiply.afk)
-          return (
-            Reflect.apply(originalFn, context, argumentsList) *
-            cheatConfig.multiply.afk
-          );
-        return Reflect.apply(originalFn, context, argumentsList);
-      },
-    }
-  );
+  events(124)._customBlock_AFKgainrates = new Proxy(events(124)._customBlock_AFKgainrates, {
+    apply: (originalFn, context, argumentsList) => {
+      if (cheatState.multiply.afk)
+        return Reflect.apply(originalFn, context, argumentsList) * cheatConfig.multiply.afk;
+      return Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
 }
 
 function setupPlayerLoadProxy() {
@@ -2962,9 +2713,7 @@ function setupMonsterKillProxy() {
       bEngine.gameAttributes.h.DummyText3 != "nah" &&
       !bEngine
         .getGameAttribute("CustomLists")
-        .h.NonAFKmonsters.includes(
-          e.getValue("ActorEvents_1", "_MonsterType")
-        ) &&
+        .h.NonAFKmonsters.includes(e.getValue("ActorEvents_1", "_MonsterType")) &&
       0 == e.getValue("ActorEvents_1", "_TempMonster")
     ) {
       (bEngine.gameAttributes.h.DummyText3 = "PiratePlunderMonster"),
@@ -3027,8 +2776,7 @@ function setupTrappingProxy() {
       const playerDatabase = bEngine.getGameAttribute("PlayerDATABASE").h;
       for (let name in playerDatabase) {
         for (let i in playerDatabase[name].h.PldTraps) {
-          playerDatabase[name].h.PldTraps[i][2] =
-            playerDatabase[name].h.PldTraps[i][6];
+          playerDatabase[name].h.PldTraps[i][2] = playerDatabase[name].h.PldTraps[i][6];
         }
       }
     }
@@ -3039,9 +2787,7 @@ function setupTrappingProxy() {
 // Ability tweaking cheat
 function setupAbilityProxy() {
   const CustomMaps = this["scripts.CustomMaps"];
-  const atkMoveMap = JSON.parse(
-    JSON.stringify(this["scripts.CustomMaps"].atkMoveMap.h)
-  );
+  const atkMoveMap = JSON.parse(JSON.stringify(this["scripts.CustomMaps"].atkMoveMap.h));
   for (const [key, value] of Object.entries(atkMoveMap)) {
     value.h["cooldown"] = 0;
     value.h["castTime"] = 0.1;
@@ -3064,11 +2810,9 @@ function setupSmithProxy() {
 
   const NewReqs = []; // This'll be the new Array where we write our stuff to
   const size = []; // Time to obtain the Array lengths (e.g. amount of items per smithing tab)
-  for (const [index, element] of Object.entries(sizeref))
-    size.push(element.length);
+  for (const [index, element] of Object.entries(sizeref)) size.push(element.length);
   // Yup we're using double square brackets, cause each item could require multiple materials to craft, while we only need to fill in one
-  for (i = 0; i < size.length; i++)
-    NewReqs.push(new Array(size[i]).fill([["Copper", "0"]]));
+  for (i = 0; i < size.length; i++) NewReqs.push(new Array(size[i]).fill([["Copper", "0"]]));
   const handler = {
     apply: function (originalFn, context, argumentsList) {
       if (cheatState.w1.smith) return NewReqs;
@@ -3082,9 +2826,7 @@ function setupSmithProxy() {
 function updateCListFuncDict() {
   const CListAttr = bEngine.getGameAttribute("CustomLists").h;
   CListFuncDict = {
-    AlchemyVialItemsPCT: new Array(CListAttr.AlchemyVialItemsPCT.length).fill(
-      99
-    ), // Vials unlock at rollin 1+
+    AlchemyVialItemsPCT: new Array(CListAttr.AlchemyVialItemsPCT.length).fill(99), // Vials unlock at rollin 1+
     SaltLicks: ChangeND(2, "SaltLicks", "0", [2]), // Nullify Saltlick upgrade cost
     RefineryInfo: ChangeND(2, "RefineryInfo", "0", [6, 7, 8, 9, 10, 11]), // Nullify refinery cost
     PrayerInfo: ChangeND(
@@ -3103,12 +2845,7 @@ function updateCListFuncDict() {
     ), // Nullify MTX cost
     PostOfficePossibleOrders: ChangeND(4, "PostOfficePossibleOrders", "0", [1]), // Nullify post office order cost
     GuildGPtasks: ChangeND(2, "GuildGPtasks", "0", [1]), // Nullify guild task requirements
-    TaskDescriptions: ChangeND(
-      3,
-      "TaskDescriptions",
-      "0",
-      [5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
-    ), // Nullify task requirements
+    TaskDescriptions: ChangeND(3, "TaskDescriptions", "0", [5, 6, 7, 8, 9, 10, 11, 12, 13, 14]), // Nullify task requirements
     SSignInfoUI: ChangeND(2, "SSignInfoUI", "0", [4]), // Nullify star sign unlock req
     WorshipBASEinfos: ChangeND(2, "WorshipBASEinfos", 0, [6]), // Nullify worship cost					// Nullify worship cost
   };
@@ -3184,9 +2921,7 @@ function setupQuestProxy() {
   for (const [key, value] of Object.entries(dialogueDefsUpdated)) {
     Object.defineProperty(dialogueDefs, key, {
       get: function () {
-        return cheatState.wide.quest
-          ? dialogueDefsUpdated[key]
-          : dialogueDefsOriginal[key];
+        return cheatState.wide.quest ? dialogueDefsUpdated[key] : dialogueDefsOriginal[key];
       },
       enumerable: true,
     });
@@ -3216,23 +2951,19 @@ function setupAlchProxy() {
   // 	}
   // });
 
-  events(189)._customBlock_CauldronStats = new Proxy(
-    events(189)._customBlock_CauldronStats,
-    {
-      apply: function (originalFn, context, argumentsList) {
-        const t = argumentsList[0];
-        if (cheatState.cauldron.bubblecost && t == "CauldronCosts") return 0; // Nullified cauldron cost
-        if (cheatState.cauldron.vialcost && t == "VialCosts") return 0; // Nullified vial cost
-        if (cheatState.cauldron.lvlreq && t == "CauldronLvsBrewREQ") return 0; // Nullified brew reqs
-        if (cheatState.cauldron.newbubble && t == "PctChanceNewBubble")
-          return 1000000; // Big enough new bubble chance
-        if (cheatState.cauldron.re_speed && t == "ResearchSpeed") return 10000; // Instant research speed
-        if (cheatState.cauldron.liq_rate && t == "LiquidHRrate")
-          return cheatConfig.cauldron.liq_rate(t); // Quick liquid
-        return Reflect.apply(originalFn, context, argumentsList);
-      },
-    }
-  );
+  events(189)._customBlock_CauldronStats = new Proxy(events(189)._customBlock_CauldronStats, {
+    apply: function (originalFn, context, argumentsList) {
+      const t = argumentsList[0];
+      if (cheatState.cauldron.bubblecost && t == "CauldronCosts") return 0; // Nullified cauldron cost
+      if (cheatState.cauldron.vialcost && t == "VialCosts") return 0; // Nullified vial cost
+      if (cheatState.cauldron.lvlreq && t == "CauldronLvsBrewREQ") return 0; // Nullified brew reqs
+      if (cheatState.cauldron.newbubble && t == "PctChanceNewBubble") return 1000000; // Big enough new bubble chance
+      if (cheatState.cauldron.re_speed && t == "ResearchSpeed") return 10000; // Instant research speed
+      if (cheatState.cauldron.liq_rate && t == "LiquidHRrate")
+        return cheatConfig.cauldron.liq_rate(t); // Quick liquid
+      return Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
 }
 // w3 cheats
 function setupw3StuffProxy() {
@@ -3242,11 +2973,7 @@ function setupw3StuffProxy() {
   actorEvents345._customBlock_WorkbenchStuff = function (...argumentsList) {
     const t = argumentsList[0];
     if (cheatState.w3.flagreq && t == "FlagReq") return 0; // Nullified flag unlock time
-    if (
-      cheatState.w3.freebuildings &&
-      (t == "TowerSaltCost" || t == "TowerMatCost")
-    )
-      return 0; // Tower cost nullification
+    if (cheatState.w3.freebuildings && (t == "TowerSaltCost" || t == "TowerMatCost")) return 0; // Tower cost nullification
     if (cheatState.w3.instabuild && t == "TowerBuildReq") return 0; // Instant build/upgrade
     if (cheatState.w3.booktime && t == "BookReqTime") return 1; // Book/second, holds shadow ban danger and could one day be replaced
     if (cheatState.w3.totalflags && t == "TotalFlags") return 10; // Total amnt of placeable flags
@@ -3254,8 +2981,7 @@ function setupw3StuffProxy() {
     if (cheatState.multiply.printer && t == "ExtraPrinting")
       return (
         (argumentsList[0] = "AdditionExtraPrinting"),
-        cheatConfig.multiply.printer *
-          Reflect.apply(Workbench, this, argumentsList)
+        cheatConfig.multiply.printer * Reflect.apply(Workbench, this, argumentsList)
       ); // print multiplier
     // if (cheatState.w3.shrinehr 			&& t == "ShrineHrREQ") return 0.5; // Shrine lvl up time reduced to 0.5 hour commented as too dangerous!
     // The minimum level talent book from the library is equivalent to the max level
@@ -3266,15 +2992,12 @@ function setupw3StuffProxy() {
   };
 
   // Worship mobs die on spawn
-  actorEvents345._customBlock_2inputs = new Proxy(
-    actorEvents345._customBlock_2inputs,
-    {
-      apply: function (originalFn, context, argumentsList) {
-        if (cheatState.w3.mobdeath) return "Worshipmobdeathi" == true ? 0 : 0;
-        return Reflect.apply(originalFn, context, argumentsList);
-      },
-    }
-  );
+  actorEvents345._customBlock_2inputs = new Proxy(actorEvents345._customBlock_2inputs, {
+    apply: function (originalFn, context, argumentsList) {
+      if (cheatState.w3.mobdeath) return "Worshipmobdeathi" == true ? 0 : 0;
+      return Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
 
   const shrineInfo = bEngine.getGameAttribute("ShrineInfo");
   for (const i in shrineInfo) {
@@ -3289,17 +3012,14 @@ function setupw3StuffProxy() {
     }
   }
 
-  actorEvents345._customBlock_TowerStats = new Proxy(
-    actorEvents345._customBlock_TowerStats,
-    {
-      apply: function (originalFn, context, argumentsList) {
-        if (cheatState.w3.towerdamage && argumentsList[0] == "damage") {
-          return 100000;
-        }
-        return Reflect.apply(originalFn, context, argumentsList);
-      },
-    }
-  );
+  actorEvents345._customBlock_TowerStats = new Proxy(actorEvents345._customBlock_TowerStats, {
+    apply: function (originalFn, context, argumentsList) {
+      if (cheatState.w3.towerdamage && argumentsList[0] == "damage") {
+        return 100000;
+      }
+      return Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
 }
 
 // w4 cheats
@@ -3307,39 +3027,32 @@ function setupw4StuffProxy() {
   const actorEvents345 = events(345);
   const actorEvents189 = events(189);
 
-  actorEvents345._customBlock_Breeding = new Proxy(
-    actorEvents345._customBlock_Breeding,
-    {
-      apply: function (originalFn, context, argumentsList) {
-        const t = argumentsList[0];
-        if (cheatState.w4.eggcap && t == "TotalEggCapacity") return 13; // 13 eggs
-        if (cheatState.w4.fenceyard && t == "FenceYardSlots") return 27; // 27 fenceyard slots
-        if (cheatState.w4.battleslots && t == "PetBattleSlots") return 6; // 6 battle slots
-        if (cheatState.w4.petchance && t == "TotalBreedChance") return 1; // 100% new pet chance
-        if (cheatState.w4.genes && t == "GeneticCost") return 0; // 0 gene upgrades
-        if (cheatState.w4.fasteggs && t == "TotalTimeForEgg") return 1; // fast eggs
-        if (cheatState.w4.petupgrades && t == "PetUpgCostREAL") return 0; // free pet upgrades
-        if (cheatState.w4.petrng && t == "PetQTYonBreed") {
-          cheatState["rng"] = "low";
-          argumentsList[2] = 8;
-          var power = Reflect.apply(originalFn, context, argumentsList);
-          cheatState["rng"] = false;
-          return Math.round(power * (1 + Math.random() * 0.2));
-        } // max power pets
-        return Reflect.apply(originalFn, context, argumentsList);
-      },
-    }
-  );
+  actorEvents345._customBlock_Breeding = new Proxy(actorEvents345._customBlock_Breeding, {
+    apply: function (originalFn, context, argumentsList) {
+      const t = argumentsList[0];
+      if (cheatState.w4.eggcap && t == "TotalEggCapacity") return 13; // 13 eggs
+      if (cheatState.w4.fenceyard && t == "FenceYardSlots") return 27; // 27 fenceyard slots
+      if (cheatState.w4.battleslots && t == "PetBattleSlots") return 6; // 6 battle slots
+      if (cheatState.w4.petchance && t == "TotalBreedChance") return 1; // 100% new pet chance
+      if (cheatState.w4.genes && t == "GeneticCost") return 0; // 0 gene upgrades
+      if (cheatState.w4.fasteggs && t == "TotalTimeForEgg") return 1; // fast eggs
+      if (cheatState.w4.petupgrades && t == "PetUpgCostREAL") return 0; // free pet upgrades
+      if (cheatState.w4.petrng && t == "PetQTYonBreed") {
+        cheatState["rng"] = "low";
+        argumentsList[2] = 8;
+        var power = Reflect.apply(originalFn, context, argumentsList);
+        cheatState["rng"] = false;
+        return Math.round(power * (1 + Math.random() * 0.2));
+      } // max power pets
+      return Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
 
   const Lab = actorEvents345._customBlock_Labb;
   actorEvents345._customBlock_Labb = function (...argumentsList) {
-    if (
-      cheatState.w4.labpx &&
-      (argumentsList[0] == "Dist" || argumentsList[0] == "BonusLineWidth")
-    )
+    if (cheatState.w4.labpx && (argumentsList[0] == "Dist" || argumentsList[0] == "BonusLineWidth"))
       return 1000; // long lab connections
-    if (cheatState.w4.sigilspeed && argumentsList[0] == "SigilBonusSpeed")
-      return 500; // 500 sigil speed
+    if (cheatState.w4.sigilspeed && argumentsList[0] == "SigilBonusSpeed") return 500; // 500 sigil speed
     return Reflect.apply(Lab, this, argumentsList);
   };
 
@@ -3353,29 +3066,26 @@ function setupw4StuffProxy() {
     return originalValue;
   };
 
-  actorEvents345._customBlock_CookingR = new Proxy(
-    actorEvents345._customBlock_CookingR,
-    {
-      apply: function (originalFn, context, argumentsList) {
-        const t = argumentsList[0];
-        if (cheatState.w4.instameals && t == "CookingReqToCook") return 1; // super fast food
-        if (cheatState.w4.instarecipes && t == "CookingFireREQ") return 1; // super fast recipes
-        if (cheatState.w4.luckychef && t == "CookingNewRecipeOdds")
-          return 4 == argumentsList[1]
-            ? 1
-            : 5 == argumentsList[1]
-            ? 0
-            : Reflect.apply(originalFn, context, argumentsList); // always cook a new recipe
-        if (
-          cheatState.w4.freekitchens &&
-          (t == "CookingNewKitchenCoinCost" || t == "CookingUpgSpiceCostQty")
-        )
-          return 0; // free kitchens and upgrades
-        if (cheatState.w4.freeplates && t == "CookingMenuMealCosts") return 0; //free dinner table upgrades
-        return Reflect.apply(originalFn, context, argumentsList);
-      },
-    }
-  );
+  actorEvents345._customBlock_CookingR = new Proxy(actorEvents345._customBlock_CookingR, {
+    apply: function (originalFn, context, argumentsList) {
+      const t = argumentsList[0];
+      if (cheatState.w4.instameals && t == "CookingReqToCook") return 1; // super fast food
+      if (cheatState.w4.instarecipes && t == "CookingFireREQ") return 1; // super fast recipes
+      if (cheatState.w4.luckychef && t == "CookingNewRecipeOdds")
+        return 4 == argumentsList[1]
+          ? 1
+          : 5 == argumentsList[1]
+          ? 0
+          : Reflect.apply(originalFn, context, argumentsList); // always cook a new recipe
+      if (
+        cheatState.w4.freekitchens &&
+        (t == "CookingNewKitchenCoinCost" || t == "CookingUpgSpiceCostQty")
+      )
+        return 0; // free kitchens and upgrades
+      if (cheatState.w4.freeplates && t == "CookingMenuMealCosts") return 0; //free dinner table upgrades
+      return Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
   // Rewrite the above function as an arrow function instead of a proxy
   const CookingR = actorEvents345._customBlock_CookingR;
   actorEvents345._customBlock_CookingR = function (...argumentsList) {
@@ -3399,10 +3109,7 @@ function setupw4StuffProxy() {
 
   const MainframeBonus = actorEvents345._customBlock_MainframeBonus;
   actorEvents345._customBlock_MainframeBonus = function (...argumentsList) {
-    if (
-      cheatState.w4.mainframe &&
-      cheatConfig.w4.mainframe.hasOwnProperty(argumentsList[0])
-    ) {
+    if (cheatState.w4.mainframe && cheatConfig.w4.mainframe.hasOwnProperty(argumentsList[0])) {
       return cheatConfig.w4.mainframe[argumentsList[0]](
         Reflect.apply(MainframeBonus, this, argumentsList)
       );
@@ -3412,10 +3119,7 @@ function setupw4StuffProxy() {
 
   const chipBonuses = actorEvents189._customBlock_chipBonuses;
   actorEvents189._customBlock_chipBonuses = function (...argumentsList) {
-    if (
-      cheatState.w4.chipbonuses &&
-      cheatConfig.w4.chipbonuses[argumentsList[0]]
-    ) {
+    if (cheatState.w4.chipbonuses && cheatConfig.w4.chipbonuses[argumentsList[0]]) {
       return cheatConfig.w4.chipbonuses[argumentsList[0]](
         Reflect.apply(chipBonuses, this, argumentsList)
       );
@@ -3426,9 +3130,7 @@ function setupw4StuffProxy() {
   const MealBonus = actorEvents189._customBlock_MealBonus;
   actorEvents189._customBlock_MealBonus = function (...argumentsList) {
     if (cheatState.w4.meals && cheatConfig.w4.meals[argumentsList[0]]) {
-      return cheatConfig.w4.meals[argumentsList[0]](
-        Reflect.apply(MealBonus, this, argumentsList)
-      );
+      return cheatConfig.w4.meals[argumentsList[0]](Reflect.apply(MealBonus, this, argumentsList));
     }
     return Reflect.apply(MealBonus, this, argumentsList);
   };
@@ -3439,21 +3141,15 @@ function setupw5Proxies() {
 
   const Holes = actorEvents579._customBlock_Holes;
   actorEvents579._customBlock_Holes = function (...argumentList) {
-    return cheatState.w5.holes &&
-      cheatConfig.w5.holes.hasOwnProperty(argumentList[0])
-      ? cheatConfig.w5.holes[argumentList[0]](
-          Reflect.apply(Holes, this, argumentList)
-        )
+    return cheatState.w5.holes && cheatConfig.w5.holes.hasOwnProperty(argumentList[0])
+      ? cheatConfig.w5.holes[argumentList[0]](Reflect.apply(Holes, this, argumentList))
       : Reflect.apply(Holes, this, argumentList);
   };
 
   const Sailing = actorEvents579._customBlock_Sailing;
   actorEvents579._customBlock_Sailing = function (...argumentsList) {
-    return cheatState.w5.sailing &&
-      cheatConfig.w5.sailing.hasOwnProperty(argumentsList[0])
-      ? cheatConfig.w5.sailing[argumentsList[0]](
-          Reflect.apply(Sailing, this, argumentsList)
-        )
+    return cheatState.w5.sailing && cheatConfig.w5.sailing.hasOwnProperty(argumentsList[0])
+      ? cheatConfig.w5.sailing[argumentsList[0]](Reflect.apply(Sailing, this, argumentsList))
       : Reflect.apply(Sailing, this, argumentsList);
   };
 
@@ -3506,9 +3202,7 @@ function setupw5Proxies() {
   DivinityAttr._38 = DivinityAttr[38];
   Object.defineProperty(DivinityAttr, 38, {
     get: function () {
-      return cheatState.w5.divinity && cheatConfig.w5.divinity.unlinks
-        ? 1
-        : this._38;
+      return cheatState.w5.divinity && cheatConfig.w5.divinity.unlinks ? 1 : this._38;
     },
     set: function (value) {
       this._38 = value;
@@ -3528,8 +3222,7 @@ function setupw5Proxies() {
   RiftAttr._1 = RiftAttr[1];
   Object.defineProperty(bEngine.getGameAttribute("Rift"), 1, {
     get: function () {
-      return cheatState.unlock.rifts &&
-        CList.RiftStuff[4][bEngine.getGameAttribute("Rift")[0]] != 9
+      return cheatState.unlock.rifts && CList.RiftStuff[4][bEngine.getGameAttribute("Rift")[0]] != 9
         ? 1e8
         : RiftAttr._1;
     },
@@ -3561,42 +3254,30 @@ function setupw6Proxies() {
 
   const Farming = actorEvents579._customBlock_FarmingStuffs;
   actorEvents579._customBlock_FarmingStuffs = function (...argumentList) {
-    return cheatState.w6.farming &&
-      cheatConfig.w6.farming.hasOwnProperty(argumentList[0])
-      ? cheatConfig.w6.farming[argumentList[0]](
-          Reflect.apply(Farming, this, argumentList)
-        )
+    return cheatState.w6.farming && cheatConfig.w6.farming.hasOwnProperty(argumentList[0])
+      ? cheatConfig.w6.farming[argumentList[0]](Reflect.apply(Farming, this, argumentList))
       : Reflect.apply(Farming, this, argumentList);
   };
 
   const Ninja = actorEvents579._customBlock_Ninja;
   actorEvents579._customBlock_Ninja = function (...argumentList) {
-    return cheatState.w6.ninja &&
-      cheatConfig.w6.ninja.hasOwnProperty(argumentList[0])
-      ? cheatConfig.w6.ninja[argumentList[0]](
-          Reflect.apply(Ninja, this, argumentList)
-        )
+    return cheatState.w6.ninja && cheatConfig.w6.ninja.hasOwnProperty(argumentList[0])
+      ? cheatConfig.w6.ninja[argumentList[0]](Reflect.apply(Ninja, this, argumentList))
       : Reflect.apply(Ninja, this, argumentList);
   };
 
   const Summoning = actorEvents579._customBlock_Summoning;
   actorEvents579._customBlock_Summoning = function (...argumentList) {
-    return cheatState.w6.summoning &&
-      cheatConfig.w6.summoning.hasOwnProperty(argumentList[0])
-      ? cheatConfig.w6.summoning[argumentList[0]](
-          Reflect.apply(Summoning, this, argumentList)
-        )
+    return cheatState.w6.summoning && cheatConfig.w6.summoning.hasOwnProperty(argumentList[0])
+      ? cheatConfig.w6.summoning[argumentList[0]](Reflect.apply(Summoning, this, argumentList))
       : Reflect.apply(Summoning, this, argumentList);
   };
 
   // we use the same summoning event since grimoire is located there.
   const Grimoire = actorEvents579._customBlock_Summoning;
   actorEvents579._customBlock_Summoning = function (...argumentList) {
-    return cheatState.w6.grimoire &&
-      cheatConfig.w6.grimoire.hasOwnProperty(argumentList[0])
-      ? cheatConfig.w6.grimoire[argumentList[0]](
-          Reflect.apply(Grimoire, this, argumentList)
-        )
+    return cheatState.w6.grimoire && cheatConfig.w6.grimoire.hasOwnProperty(argumentList[0])
+      ? cheatConfig.w6.grimoire[argumentList[0]](Reflect.apply(Grimoire, this, argumentList))
       : Reflect.apply(Grimoire, this, argumentList);
   };
 }
@@ -3607,9 +3288,7 @@ function setupMiscProxies() {
   const keychain = actorEvents345._customBlock_keychainn;
   actorEvents345._customBlock_keychainn = function (...argumentList) {
     return cheatConfig.misc.hasOwnProperty("keychain")
-      ? cheatConfig.misc["keychain"](
-          Reflect.apply(keychain, this, argumentList)
-        )
+      ? cheatConfig.misc["keychain"](Reflect.apply(keychain, this, argumentList))
       : Reflect.apply(keychain, this, argumentList);
   };
 }
@@ -3686,8 +3365,7 @@ function setupGeneralInfoProxy() {
 function setupPoingProxy() {
   let aiVelocity = 0;
   Object.defineProperty(
-    bEngine.gameAttributes.h.PixelHelperActor[23].behaviors.behaviors[0].script
-      ._GenINFO[63],
+    bEngine.gameAttributes.h.PixelHelperActor[23].behaviors.behaviors[0].script._GenINFO[63],
     "1",
     {
       get: function () {
@@ -3772,15 +3450,9 @@ function rollFamilyObols() {
 }
 
 function rollAllCharactersObols() {
-  Object.values(bEngine.getGameAttribute("PlayerDATABASE").h).forEach(
-    (player) => {
-      rollPerfectObols(
-        player.h.ObolEquippedOrder,
-        player.h.ObolEquippedMap,
-        player.h.CharacterClass
-      );
-    }
-  );
+  Object.values(bEngine.getGameAttribute("PlayerDATABASE").h).forEach((player) => {
+    rollPerfectObols(player.h.ObolEquippedOrder, player.h.ObolEquippedMap, player.h.CharacterClass);
+  });
 }
 
 function rollInventoryObols() {
@@ -3824,17 +3496,10 @@ function rollPerfectObols(obolOrder, obolMap, characterClass) {
     Object.keys(obolMapItem).forEach((stat) => delete obolMapItem[stat]);
     obolDef["SuperFunItemDisplayType"] = "Inventory";
     if (obolDef["UQ1txt"] != 0)
-      (obolMapItem["UQ1txt"] = obolDef["UQ1txt"]),
-        (obolMapItem["UQ1val"] = 1),
-        rollsLeft--;
+      (obolMapItem["UQ1txt"] = obolDef["UQ1txt"]), (obolMapItem["UQ1val"] = 1), rollsLeft--;
     if (obolDef["UQ2txt"] != 0)
-      (obolMapItem["UQ2txt"] = obolDef["UQ2txt"]),
-        (obolMapItem["UQ2val"] = 1),
-        rollsLeft--;
-    if (
-      obolDef["Weapon_Power"] > 0 &&
-      ["HEXAGON_OBOL", "SPARKLE_OBOL"].includes(obolDef["Type"])
-    ) {
+      (obolMapItem["UQ2txt"] = obolDef["UQ2txt"]), (obolMapItem["UQ2val"] = 1), rollsLeft--;
+    if (obolDef["Weapon_Power"] > 0 && ["HEXAGON_OBOL", "SPARKLE_OBOL"].includes(obolDef["Type"])) {
       // skilling obol, add weapon power
       obolMapItem["Weapon_Power"] = 1;
       rollsLeft--;
@@ -3955,18 +3620,12 @@ function getZJSManipulator() {
 }
 
 /****************************************************************************************************
-	A huge dictionary made for the bulk function:
-	Since we'd hardly access this part of the code, it's fine being all the way down here.
+  A huge dictionary made for the bulk function:
+  Since we'd hardly access this part of the code, it's fine being all the way down here.
 */
 const DictDrops = {
   // 0) Handy cheat items
-  default: [
-    "Timecandy6",
-    "ExpBalloon3",
-    "ResetCompleted",
-    "ResetCompletedS",
-    "ClassSwap",
-  ],
+  default: ["Timecandy6", "ExpBalloon3", "ResetCompleted", "ResetCompletedS", "ClassSwap"],
   // 1) All bag boosters
   invbag: [
     "InvBag1",
@@ -4360,11 +4019,7 @@ const DictDrops = {
     "3640100", //Mega Crit (Lvl 100)
   ],
   // 9) Blacksmith recipes and tabs
-  smith: [
-    "EquipmentSmithingTabs3",
-    "SmithingHammerChisel",
-    "SmithingHammerChisel2",
-  ],
+  smith: ["EquipmentSmithingTabs3", "SmithingHammerChisel", "SmithingHammerChisel2"],
   // 10) All skilling resources
   skill: [
     "Copper",
@@ -4685,28 +4340,25 @@ const keychainStatsMap = {
   allstats: [3, "EquipmentKeychain24", "%_ALL_STATS", "4"],
 };
 /****************************************************************************************************
-	This function is made to simplify some code, basically a bit of elementary programming.
-	The arguments are as followed:
-	dim 		= Amount of dimensions, can take values 2 to 4 (at 1D there's no reason for such complexity)
-	KeyName 	= The respecitve key inside GameAttribute Customlist that we want to iterate
-	repl 		= The replacement value
-	elem 		= List of Array indices, which elements we want replaced
+  This function is made to simplify some code, basically a bit of elementary programming.
+  The arguments are as followed:
+  dim 		= Amount of dimensions, can take values 2 to 4 (at 1D there's no reason for such complexity)
+  KeyName 	= The respecitve key inside GameAttribute Customlist that we want to iterate
+  repl 		= The replacement value
+  elem 		= List of Array indices, which elements we want replaced
 */
 function ChangeND(dim, KeyName, repl, elem) {
   let NDArr;
   if (typeof KeyName === "string")
     // Creates a deep-copy
-    NDArr = JSON.parse(
-      JSON.stringify(bEngine.getGameAttribute("CustomLists").h[KeyName])
-    );
+    NDArr = JSON.parse(JSON.stringify(bEngine.getGameAttribute("CustomLists").h[KeyName]));
   else NDArr = KeyName; // Else this KeyName parameter is an object
   if (dim === 4) {
     for (const [index1, element1] of Object.entries(NDArr)) {
       for (const [index2, element2] of Object.entries(element1)) {
         for (const [index3, element3] of Object.entries(element2)) {
           for (i in elem)
-            element3[elem[i]] =
-              repl instanceof Function ? repl(element3[elem[i]]) : repl; // Fill every
+            element3[elem[i]] = repl instanceof Function ? repl(element3[elem[i]]) : repl; // Fill every
           NDArr[index1][index2][index3] = element3; // Write back to the 4D Array
         }
       }
@@ -4715,23 +4367,20 @@ function ChangeND(dim, KeyName, repl, elem) {
     for (const [index1, element1] of Object.entries(NDArr)) {
       for (const [index2, element2] of Object.entries(element1)) {
         for (i in elem)
-          element2[elem[i]] =
-            repl instanceof Function ? repl(element2[elem[i]]) : repl;
+          element2[elem[i]] = repl instanceof Function ? repl(element2[elem[i]]) : repl;
         NDArr[index1][index2] = element2; // Write back to the 3D Array
       }
     }
   } else if (dim === 2) {
     for (const [index1, element1] of Object.entries(NDArr)) {
-      for (i in elem)
-        element1[elem[i]] =
-          repl instanceof Function ? repl(element1[elem[i]]) : repl;
+      for (i in elem) element1[elem[i]] = repl instanceof Function ? repl(element1[elem[i]]) : repl;
       NDArr[index1] = element1; // Write back to the 2D Array
     }
   } else return NDArr; // Else return the original without modifications
   return NDArr;
 } // This function's even less likely to ever be revisited, so it's nice here
 /****************************************************************************************************
-	The help function for gga/ggk
+  The help function for gga/ggk
 */
 function gg_func(Params, which) {
   const foundVals = [];
@@ -4770,8 +4419,7 @@ function gg_func(Params, which) {
             foundVals.push("  ".repeat(depth) + `${index}:`);
             iterate(obj[index], depth + 1);
           } else {
-            if (which == 0)
-              foundVals.push("  ".repeat(depth) + `${index}: ${obj[index]}`);
+            if (which == 0) foundVals.push("  ".repeat(depth) + `${index}: ${obj[index]}`);
             // This one's for gga
             else foundVals.push("  ".repeat(depth) + `${index}`); // This one's for ggk
           }
@@ -4795,16 +4443,16 @@ function gg_func(Params, which) {
 }
 /*  Credit section:
  
-	iBelg
+  iBelg
     User profile:   https://fearlessrevolution.com/memberlist.php?mode=viewprofile&u=45315
-	Tool release:	https://fearlessrevolution.com/viewtopic.php?p=199352#p199352
+  Tool release:	https://fearlessrevolution.com/viewtopic.php?p=199352#p199352
     > The creator of the console injection, designer of the cheats syntax as well as many cheats
  
-	salmon85
+  salmon85
     User profile:   https://fearlessrevolution.com/memberlist.php?mode=viewprofile&u=80266
     > Wipe inv, wipe forge and class lvl command
  
-	Creater0822
+  Creater0822
     User profile:   https://fearlessrevolution.com/memberlist.php?mode=viewprofile&u=10529
     Google Drive:   https://drive.google.com/drive/folders/1MyEkO0uNEpGx1VctMEKZ5sQiNzuSZv36?usp=sharing
     > For the remaining commands
@@ -4812,15 +4460,15 @@ function gg_func(Params, which) {
 
 /* Help & troubleshoot section:
  
-   	How to use:
-   	> Place iBelg's injecting tool and this script inside the game's root folder and execute the tool (not the game)
-	> To close the game, you have to close the NodeJS console.
+      How to use:
+      > Place iBelg's injecting tool and this script inside the game's root folder and execute the tool (not the game)
+  > To close the game, you have to close the NodeJS console.
  
-	The tool closes itself instantly after execution?!?!
-	The error shows things like: UnhandledPromiseRejectionWarning: Error: No inspectable targets
-	> You probably forgot to have the Steam client launched in the background.
+  The tool closes itself instantly after execution?!?!
+  The error shows things like: UnhandledPromiseRejectionWarning: Error: No inspectable targets
+  > You probably forgot to have the Steam client launched in the background.
  
-	The game is has been loaded, but the console doesn't load.
-	> There could be multiple sessions running.
-	> If you rapidly re-start the injected game after closing it, the previous process may not be killed yet.
+  The game is has been loaded, but the console doesn't load.
+  > There could be multiple sessions running.
+  > If you rapidly re-start the injected game after closing it, the previous process may not be killed yet.
 */
