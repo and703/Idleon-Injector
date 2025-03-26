@@ -38,8 +38,8 @@ const objToString = (obj) => {
 
 // Tool initialization messages
 console.log('------------------------------------------------------------------------------------------');
-console.log("Updated version of InjectCheats by valleymon: originally by iBelg, continued by Creater0822");
-console.log('InjectCheatF5 v1.2');
+console.log("Updated version of InjectCheats by Disputate: originally by iBelg, continued by Creater0822, updated by valleymon ");
+console.log('InjectCheatF5 v1.2.1');
 console.log('------------------------------------------------------------------------------------------');
 console.log('');
 
@@ -334,7 +334,7 @@ async function setupIntercept(hook) {
       }
     });
 
-    console.log("Page load event listener attached."); // Added log
+    console.log("Page load event listener attached.");
 
   } catch (error) {
     console.error("An error occurred in the main execution block:", error);
