@@ -40,6 +40,7 @@ exports.startupCheats = [
 	'w4 fastforaging',
 	'w4 spiceclaim',
 	'w5',
+	'w6',
 	'nomore ^InvBag.*', // inventory bags
 	'nomore ^InvStorage.*', // chests
 	'nomore ^Obol([Bronze|Silver|Gold]).*', // bronze, silver, gold obols
@@ -73,6 +74,50 @@ exports.cheatConfig = {
 			AcornShopCost: t => t * 0.8, //acorn shop upgrades are 20% cheaper
 			BoxCost: t => t * 0.8, //new boxes are 20% cheaper
 		},
+	},
+	w6: {
+		farming: {
+			GrowthReq: t => t / 5, // time for plants to grow (base is 4 hours * 1.5 ^ seedtype (0 for basic, etc))
+			OGunlocked: t => t, //if overgrowth unlocked in shop (0 -> locked, 1 -> unlocked)
+			NextOGchance: t => t * 5, // chance to get next OG multi (5x chance)
+			OGmulti: t => t == 1 ? 1 : Math.max(1, t * 2), // OG bonus multiplier (1 -> no multiplier, 2 -> 2x, 4 -> 4x, etc) minimum is 1x to prevent bricking
+			PlotOwned: t => Math.min(36, t + 2), // number of plots owned, additional two plots to your farm, max is 36
+			MarketCostType: t => t, // plant type for upgrade
+			MarketCostQTY: t => Math.floor(t / 5), // plant amount for upgrade, t => 0 for free upgrades
+			NextCropChance: t => t * 2, // chance to get next plant evo level (2x chance)
+			CropsBonusValue: t => t * 2, // how much each crop is worth (2x)
+			CropsOnVine: t => t * 2, // 2 x Num of crops on each plant
+			GrowthRate: t => t, // Growth rate multiplier (growth increase/sec)
+		},
+		ninja: {
+			EmporiumCost: t => t / 5, // emporium cost are 5x cheaper
+			KOtime: t => t / 5, // KO time 5x shorter (lower is better)
+			ActionSpd: t => t * 2, // Action speed 2x faster
+			Stealth: t => t * 2, // Stealth 2x more
+			DetectionDEC: t => t / 5, // Detection rate 5x lesser (lower is better)
+			DoorMaxHP: t => t, // Door HP 
+			JadeUpgCost: t => t, // Jade upgrades cost 5x cheaper (lower is better), t => 0 for free upgrades
+			ItemStat: t => t * 2, // 2x Item stats
+			ItemFindOdds: t => t * 2, // 2x Item find rate
+			PristineBon: t => t * 1.2, // 1.2x Pristine Bon stats (WARNING don't over multiply in case of shadow ban due to too high drop rate)	
+		},
+		summoning: {
+			ManaStart: t => t, // starting mana (can be t * 2 for 2x current start or t => 10)
+			ManaRegen: t => t * 2, // 2x mana regen rate
+			UnitSpd: t => t, // set own unit speed
+			UnitHP: t => t * 2, // 2x unit HP
+			UnitDMG: t => t * 2, // 2x unit damage
+			UnitDODGE: t => Math.min(1, t * 2), // 2x dodge rate max of 1
+			SummUpgBonus: t => t * 2, // 2x value of all summoning upgrade bonuses
+			SummRockEssGen: t => t * 1.5, // 1.5x essence gain for all colours
+			UpgCost: t => t / 2, // t => 0 for free upgrades
+			UnitCost: t => Math.ceil(t/2), // halved unit cost (lower is better)
+			RerollCost: t => 0, // summon unit cost always 0
+			SummEXPgain: t => t, // increase summoning exp gain
+			EnemyHP: t => t / 2, // halved enemy hp
+			EnemyDMG: t => t / 2, // halved enemy dmg
+			EnemySpd: t => t, // set enemy unit speed
+		}
 	},
 };
 
