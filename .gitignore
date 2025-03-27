@@ -2,5 +2,6 @@
 node_modules/
 jspm_packages/
 zips/
+upx/
 
 InjectCheatsF5.exe

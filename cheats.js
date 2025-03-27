@@ -1840,6 +1840,7 @@ registerCheat(
 */
 async function setup() {
   if (setupDone) return "Cheat setup complete";
+  console.log('Entering setup function...'); // Added for diagnostics
   setupDone = true;
   await gameReady.call(this);
 
@@ -1882,6 +1883,88 @@ async function setup() {
   // changed for a solution not relying on the name.
   window[0].agIis = function () { };
 
+  console.log('Registering "cheats" command...'); // Added for diagnostics
+  registerCheat(
+    "cheats",
+    function (params) {
+      let cheatsAvailable = [];
+      Object.keys(cheats).forEach((cheat) => {
+        cheatsAvailable.push(cheat + (cheats[cheat]["message"] ? ` (${cheats[cheat].message})` : ""));
+      });
+      return cheatsAvailable.join("\n");
+    },
+    "list available cheats"
+  );
+
+  console.log('Registering "list" command group...'); // Added for diagnostics
+  registerCheats({
+    name: "list",
+    message: "list something. third param optional filter",
+    subcheats: [
+      {
+        name: "bundle",
+        message: "list bundles. third param optional filter",
+        fn: listFunction,
+      },
+      {
+        name: "missing_bundle",
+        message: "list missing bundles",
+        fn: listFunction,
+      },
+      {
+        name: "item",
+        message: "list items. third param optional filter",
+        fn: listFunction,
+      },
+      {
+        name: "monster",
+        message: "list monsters. third param optional filter",
+        fn: listFunction,
+      },
+      {
+        name: "class",
+        message: "list classes. third param optional filter",
+        fn: listFunction,
+      },
+      {
+        name: "card",
+        message: "list classes. third param optional filter",
+        fn: listFunction,
+      },
+      {
+        name: "quest",
+        message: "list quests. third param optional filter",
+        fn: listFunction,
+      },
+      {
+        name: "map",
+        message: "list maps. third param optional filter",
+        fn: listFunction,
+      },
+      {
+        name: "talent",
+        message: "list talents. third param optional filter",
+        fn: listFunction,
+      },
+      {
+        name: "ability",
+        message: "list abilities. third param optional filter",
+        fn: listFunction,
+      },
+      {
+        name: "smith",
+        message: "list smithing recipes. third param optional filter",
+        fn: listFunction,
+      },
+      {
+        name: "gga",
+        message: "list game attributes. third param optional filter",
+        fn: listFunction,
+      },
+    ],
+  });
+
+
   let rtn = [];
   rtn.push("--------------------");
   rtn = rtn.concat(runStartupCheats.call(this));
@@ -1892,6 +1975,7 @@ async function setup() {
     "Cheats will find as you type, so if you're looking for eg gem cheats, or an item just type it and see what comes up"
   );
   rtn.push("--------------------");
+  console.log('Exiting setup function successfully.'); // Added for diagnostics
   return rtn.join("\n");
 }
 
@@ -3520,74 +3604,161 @@ function rollPerfectObols(obolOrder, obolMap, characterClass) {
 
 // Here you can add suggestions for the autocomplete
 async function getAutoCompleteSuggestions() {
-  const cheatNames = cheats["cheats"].fn.call(this, []);
-  const items = cheats["list item"].fn.call(this, []);
-  const monsters = cheats["list monster"].fn.call(this, []);
-  const attributes = cheats["list gga"].fn.call(this, []);
   let choices = [];
-  cheatNames.split("\n").forEach(function (cheat) {
-    choices.push({
-      name: cheat.substring(0, cheat.indexOf("(")).trim(),
-      message: cheat,
-      value: cheat.substring(0, cheat.indexOf("(")).trim(),
+  let cheatNames = "";
+  let items = "";
+  let monsters = "";
+  let attributes = "";
+
+  // Diagnostic checks before accessing .fn
+  if (cheats["cheats"] && typeof cheats["cheats"].fn === 'function') {
+    cheatNames = cheats["cheats"].fn.call(this, []);
+  } else {
+    console.error("Error in getAutoCompleteSuggestions: cheats['cheats'] or its .fn is missing!");
+    // Optionally return early or provide default/empty suggestions
+  }
+
+  if (cheats["list item"] && typeof cheats["list item"].fn === 'function') {
+    items = cheats["list item"].fn.call(this, []);
+  } else {
+    console.error("Error in getAutoCompleteSuggestions: cheats['list item'] or its .fn is missing!");
+  }
+
+  if (cheats["list monster"] && typeof cheats["list monster"].fn === 'function') {
+    monsters = cheats["list monster"].fn.call(this, []);
+  } else {
+    console.error("Error in getAutoCompleteSuggestions: cheats['list monster'] or its .fn is missing!");
+  }
+
+  if (cheats["list gga"] && typeof cheats["list gga"].fn === 'function') {
+    attributes = cheats["list gga"].fn.call(this, []);
+  } else {
+    console.error("Error in getAutoCompleteSuggestions: cheats['list gga'] or its .fn is missing!");
+  }
+
+  // Process available data, even if some parts failed
+  if (cheatNames) {
+    cheatNames.split("\n").forEach(function (cheat) {
+      choices.push({
+        name: cheat.substring(0, cheat.indexOf("(")).trim(),
+        message: cheat,
+        value: cheat.substring(0, cheat.indexOf("(")).trim(),
+      });
     });
-  });
-  items.split("\n").forEach(function (item) {
-    let itemParts = item.split(", ");
-    if (!["error", "null", undefined, "ingameName"].includes(itemParts[1])) {
-      choices.push({
-        name: "drop " + itemParts[0],
-        message: `drop ${itemParts[0]} (${itemParts[1]})`,
-        value: "drop " + itemParts[0],
-      });
-      choices.push({
-        name: "nomore " + itemParts[0],
-        message: `nomore ${itemParts[0]} (${itemParts[1]})`,
-        value: "nomore " + itemParts[0],
-      });
-    }
-  });
-  monsters.split("\n").forEach(function (item) {
-    let itemParts = item.split(", ");
-    if (!["error", "null", undefined, "ingameName"].includes(itemParts[1])) {
-      choices.push({
-        name: "spawn " + itemParts[0],
-        message: `spawn ${itemParts[0]} (${itemParts[1]})`,
-        value: "spawn " + itemParts[0],
-      });
-    }
-  });
-  attributes.split("\n").forEach(function (item) {
-    if (!["error", "null", undefined, "ingameName"].includes(item)) {
-      choices.push({
-        name: "gga " + item,
-        message: `gga ${item}`,
-        value: "gga " + item,
-      });
-    }
-  });
+  }
+
+  if (items) {
+    items.split("\n").forEach(function (item) {
+      let itemParts = item.split(", ");
+      if (!["error", "null", undefined, "ingameName"].includes(itemParts[1])) {
+        choices.push({
+          name: "drop " + itemParts[0],
+          message: `drop ${itemParts[0]} (${itemParts[1]})`,
+          value: "drop " + itemParts[0],
+        });
+        choices.push({
+          name: "nomore " + itemParts[0],
+          message: `nomore ${itemParts[0]} (${itemParts[1]})`,
+          value: "nomore " + itemParts[0],
+        });
+      }
+    });
+  }
+
+  if (monsters) {
+    monsters.split("\n").forEach(function (item) {
+      let itemParts = item.split(", ");
+      if (!["error", "null", undefined, "ingameName"].includes(itemParts[1])) {
+        choices.push({
+          name: "spawn " + itemParts[0],
+          message: `spawn ${itemParts[0]} (${itemParts[1]})`,
+          value: "spawn " + itemParts[0],
+        });
+      }
+    });
+  }
+
+  if (attributes) {
+    attributes.split("\n").forEach(function (item) {
+      if (!["error", "null", undefined, "ingameName"].includes(item)) {
+        choices.push({
+          name: "gga " + item,
+          message: `gga ${item}`,
+          value: "gga " + item,
+        });
+      }
+    });
+  }
 
   Object.keys(summonUnits).forEach(function (item) {
     if (!["error", "null", undefined, "ingameName"].includes(item)) {
       choices.push({
         name: "summoning " + item,
-        message: "summoning " + item,
-        value: "summoning " + item,
+        message: "summoning " + item, // Corrected variable
+        value: "summoning " + item,   // Corrected variable
       });
     }
-  });
+  }); // Corrected syntax: loop closes here
 
-  Object.keys(keychainStatsMap).forEach(function (item) {
-    if (!["error", "null", undefined, "ingameName"].includes(item)) {
-      choices.push({
-        name: "keychain " + item,
-        message: "keychain " + item,
-        value: "keychain " + item,
-      });
-    }
-  });
-  return choices;
-}
+  // Process items if available
+  if (items) {
+    items.split("\n").forEach(function (item) {
+      let itemParts = item.split(", ");
+      if (!["error", "null", undefined, "ingameName"].includes(itemParts[1])) {
+        choices.push({
+          name: "drop " + itemParts[0],
+          message: `drop ${itemParts[0]} (${itemParts[1]})`,
+          value: "drop " + itemParts[0],
+        });
+        choices.push({
+          name: "nomore " + itemParts[0],
+          message: `nomore ${itemParts[0]} (${itemParts[1]})`,
+          value: "nomore " + itemParts[0],
+        });
+      }
+    });
+    monsters.split("\n").forEach(function (item) {
+      let itemParts = item.split(", ");
+      if (!["error", "null", undefined, "ingameName"].includes(itemParts[1])) {
+        choices.push({
+          name: "spawn " + itemParts[0],
+          message: `spawn ${itemParts[0]} (${itemParts[1]})`,
+          value: "spawn " + itemParts[0],
+        });
+      }
+    });
+    attributes.split("\n").forEach(function (item) {
+      if (!["error", "null", undefined, "ingameName"].includes(item)) {
+        choices.push({
+          name: "gga " + item,
+          message: `gga ${item}`,
+          value: "gga " + item,
+        });
+      }
+    });
+
+    Object.keys(summonUnits).forEach(function (item) {
+      if (!["error", "null", undefined, "ingameName"].includes(item)) {
+        choices.push({
+          name: "summoning " + item,
+          message: "summoning " + item,
+          value: "summoning " + item,
+        });
+      }
+    });
+
+    Object.keys(keychainStatsMap).forEach(function (item) {
+      if (!["error", "null", undefined, "ingameName"].includes(item)) {
+        choices.push({
+          name: "keychain " + item,
+          message: "keychain " + item,
+          value: "keychain " + item,
+        });
+      }
+    });
+    return choices;
+  }
+} // Added missing closing brace for getAutoCompleteSuggestions
 
 // These choices won't execute immediately when you hit enter, they will allow you to add additional input such as a number if you like, then execute the second time you press enter
 async function getChoicesNeedingConfirmation() {
