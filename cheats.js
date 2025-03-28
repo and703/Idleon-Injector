@@ -1842,141 +1842,149 @@ async function setup() {
   if (setupDone) return "Cheat setup complete";
   console.log('Entering setup function...'); // Added for diagnostics
   setupDone = true;
-  await gameReady.call(this);
 
-  // setup proxies
-  setupCurrenciesOwnedProxy.call(this);
-  setupArbitraryProxy.call(this);
-  setupAnvilProxy.call(this);
-  setupStampCostProxy.call(this);
-  setupAFKRateProxy.call(this);
-  setupAlchProxy.call(this);
-  setupw3StuffProxy.call(this);
-  setupw4StuffProxy.call(this);
-  setupOptionsListAccountProxy.call(this);
-  setupCListProxy.call(this);
-  setupQuestProxy.call(this);
-  setupSmithProxy.call(this);
-  setupAbilityProxy.call(this);
-  setupValuesMapProxy.call(this);
-  setupCloudSaveProxy.call(this);
-  setupBehaviorScriptProxies.call(this);
-  setupItemMoveProxy.call(this);
-  setupItemsMenuProxy.call(this);
-  setupTrappingProxy.call(this);
-  setupTalentProxy.call(this);
-  setupw5Proxies.call(this);
-  setupw6Proxies.call(this);
-  setupItemMiscProxy.call(this);
-  setupMiscProxies.call(this);
-  setupPlayerLoadProxy.call(this);
-  setupAutoLootProxy.call(this);
-  setupMonsterKillProxy.call(this);
-  setupMonsterProxy.call(this);
-  setupHPProxy.call(this);
-  setupCreateElementProxy.call(iframe);
-  // setupBuffsActiveProxy.call(this); // unused at present
-  // setupBuffsProxy.call(this); // unused at present
+  try { // Added try block for detailed error catching within setup
+    await gameReady.call(this);
 
-  // This stops the steamachieve34/35 bug. This function is in steam.js.
-  // The name is generated so it may well change between versions and need updating here
-  // changed for a solution not relying on the name.
-  window[0].agIis = function () { };
+    // setup proxies
+    setupCurrenciesOwnedProxy.call(this);
+    setupArbitraryProxy.call(this);
+    setupAnvilProxy.call(this);
+    setupStampCostProxy.call(this);
+    setupAFKRateProxy.call(this);
+    setupAlchProxy.call(this);
+    setupw3StuffProxy.call(this);
+    setupw4StuffProxy.call(this);
+    setupOptionsListAccountProxy.call(this);
+    setupCListProxy.call(this);
+    setupQuestProxy.call(this);
+    setupSmithProxy.call(this);
+    setupAbilityProxy.call(this);
+    setupValuesMapProxy.call(this);
+    setupCloudSaveProxy.call(this);
+    setupBehaviorScriptProxies.call(this);
+    setupItemMoveProxy.call(this);
+    setupItemsMenuProxy.call(this);
+    setupTrappingProxy.call(this);
+    setupTalentProxy.call(this);
+    setupw5Proxies.call(this);
+    setupw6Proxies.call(this);
+    setupItemMiscProxy.call(this);
+    setupMiscProxies.call(this);
+    setupPlayerLoadProxy.call(this);
+    setupAutoLootProxy.call(this);
+    setupMonsterKillProxy.call(this);
+    setupMonsterProxy.call(this);
+    setupHPProxy.call(this);
+    setupCreateElementProxy.call(iframe);
+    // setupBuffsActiveProxy.call(this); // unused at present
+    // setupBuffsProxy.call(this); // unused at present
 
-  console.log('Registering "cheats" command...'); // Added for diagnostics
-  registerCheat(
-    "cheats",
-    function (params) {
-      let cheatsAvailable = [];
-      Object.keys(cheats).forEach((cheat) => {
-        cheatsAvailable.push(cheat + (cheats[cheat]["message"] ? ` (${cheats[cheat].message})` : ""));
-      });
-      return cheatsAvailable.join("\n");
-    },
-    "list available cheats"
-  );
+    // This stops the steamachieve34/35 bug. This function is in steam.js.
+    // The name is generated so it may well change between versions and need updating here
+    // changed for a solution not relying on the name.
+    window[0].agIis = function () { };
 
-  console.log('Registering "list" command group...'); // Added for diagnostics
-  registerCheats({
-    name: "list",
-    message: "list something. third param optional filter",
-    subcheats: [
-      {
-        name: "bundle",
-        message: "list bundles. third param optional filter",
-        fn: listFunction,
+    console.log('Registering "cheats" command...'); // Added for diagnostics
+    registerCheat(
+      "cheats",
+      function (params) {
+        let cheatsAvailable = [];
+        Object.keys(cheats).forEach((cheat) => {
+          cheatsAvailable.push(cheat + (cheats[cheat]["message"] ? ` (${cheats[cheat].message})` : ""));
+        });
+        return cheatsAvailable.join("\n");
       },
-      {
-        name: "missing_bundle",
-        message: "list missing bundles",
-        fn: listFunction,
-      },
-      {
-        name: "item",
-        message: "list items. third param optional filter",
-        fn: listFunction,
-      },
-      {
-        name: "monster",
-        message: "list monsters. third param optional filter",
-        fn: listFunction,
-      },
-      {
-        name: "class",
-        message: "list classes. third param optional filter",
-        fn: listFunction,
-      },
-      {
-        name: "card",
-        message: "list classes. third param optional filter",
-        fn: listFunction,
-      },
-      {
-        name: "quest",
-        message: "list quests. third param optional filter",
-        fn: listFunction,
-      },
-      {
-        name: "map",
-        message: "list maps. third param optional filter",
-        fn: listFunction,
-      },
-      {
-        name: "talent",
-        message: "list talents. third param optional filter",
-        fn: listFunction,
-      },
-      {
-        name: "ability",
-        message: "list abilities. third param optional filter",
-        fn: listFunction,
-      },
-      {
-        name: "smith",
-        message: "list smithing recipes. third param optional filter",
-        fn: listFunction,
-      },
-      {
-        name: "gga",
-        message: "list game attributes. third param optional filter",
-        fn: listFunction,
-      },
-    ],
-  });
+      "list available cheats"
+    );
+
+    console.log('Registering "list" command group...'); // Added for diagnostics
+    registerCheats({
+      name: "list",
+      message: "list something. third param optional filter",
+      subcheats: [
+        {
+          name: "bundle",
+          message: "list bundles. third param optional filter",
+          fn: listFunction,
+        },
+        {
+          name: "missing_bundle",
+          message: "list missing bundles",
+          fn: listFunction,
+        },
+        {
+          name: "item",
+          message: "list items. third param optional filter",
+          fn: listFunction,
+        },
+        {
+          name: "monster",
+          message: "list monsters. third param optional filter",
+          fn: listFunction,
+        },
+        {
+          name: "class",
+          message: "list classes. third param optional filter",
+          fn: listFunction,
+        },
+        {
+          name: "card",
+          message: "list classes. third param optional filter",
+          fn: listFunction,
+        },
+        {
+          name: "quest",
+          message: "list quests. third param optional filter",
+          fn: listFunction,
+        },
+        {
+          name: "map",
+          message: "list maps. third param optional filter",
+          fn: listFunction,
+        },
+        {
+          name: "talent",
+          message: "list talents. third param optional filter",
+          fn: listFunction,
+        },
+        {
+          name: "ability",
+          message: "list abilities. third param optional filter",
+          fn: listFunction,
+        },
+        {
+          name: "smith",
+          message: "list smithing recipes. third param optional filter",
+          fn: listFunction,
+        },
+        {
+          name: "gga",
+          message: "list game attributes. third param optional filter",
+          fn: listFunction,
+        },
+      ],
+    });
 
 
-  let rtn = [];
-  rtn.push("--------------------");
-  rtn = rtn.concat(runStartupCheats.call(this));
-  rtn.push("Cheat setup complete");
-  rtn.push("--------------------");
-  rtn.push("Hit enter to list available cheats");
-  rtn.push(
-    "Cheats will find as you type, so if you're looking for eg gem cheats, or an item just type it and see what comes up"
-  );
-  rtn.push("--------------------");
-  console.log('Exiting setup function successfully.'); // Added for diagnostics
-  return rtn.join("\n");
+    let rtn = [];
+    rtn.push("--------------------");
+    rtn = rtn.concat(runStartupCheats.call(this));
+    rtn.push("Cheat setup complete");
+    rtn.push("--------------------");
+    rtn.push("Hit enter to list available cheats");
+    rtn.push(
+      "Cheats will find as you type, so if you're looking for eg gem cheats, or an item just type it and see what comes up"
+    );
+    rtn.push("--------------------");
+    console.log('Exiting setup function successfully.'); // Added for diagnostics
+    return rtn.join("\n");
+
+  } catch (setupError) { // Added catch block
+    console.error("Error occurred during setup function:", setupError.stack || setupError);
+    // Optionally re-throw or return an error indicator if needed downstream
+    return "Error during cheat setup."; // Return specific error message
+  }
 }
 
 // run startup cheats

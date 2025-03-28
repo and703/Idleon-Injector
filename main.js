@@ -232,7 +232,7 @@ async function setupIntercept(hook) {
 
         // Call the `setup` function defined in cheats.js within the game's context.
         const init = await Runtime.evaluate({ expression: `setup.call(${context})`, awaitPromise: true, allowUnsafeEvalBlockedByCSP: true });
-        console.log(init.result.value);
+        console.log("init.result.value", init.result.value);
 
         // Fetch autocomplete suggestions and confirmation requirements from the cheat context.
         let choicesResult = await Runtime.evaluate({ expression: `getAutoCompleteSuggestions.call(${context})`, awaitPromise: true, returnByValue: true });
