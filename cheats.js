@@ -16,7 +16,7 @@ let events; // function that returns actorEvent script by it's number
 let behavior; // Stencyl behavior object
 let CListFuncDict = {}; // Dictionary of custom list entries
 
-let iframe = window.document.querySelector("iframe").contentWindow;
+let iframe; // Declare iframe globally, initialize later
 
 async function gameReady() {
   while (
@@ -1842,6 +1842,25 @@ async function setup() {
   if (setupDone) return "Cheat setup complete";
   console.log('Entering setup function...'); // Added for diagnostics
   setupDone = true;
+
+  // Retry finding the iframe for up to 10 seconds
+  let iframeRetryCount = 0;
+  const maxRetries = 20; // 20 * 500ms = 10 seconds
+  while (!iframe && iframeRetryCount < maxRetries) {
+    iframe = window.document.querySelector("iframe")?.contentWindow;
+    if (!iframe) {
+      iframeRetryCount++;
+      console.log(`Iframe not found, retrying... (${iframeRetryCount}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms
+    }
+  }
+
+  if (!iframe) {
+    console.error(`CRITICAL ERROR: Could not find the game iframe after ${maxRetries} retries.`);
+    throw new Error(`Could not find the game iframe after ${maxRetries} retries.`);
+  }
+  console.log("Iframe found successfully.");
+
 
   try { // Added try block for detailed error catching within setup
     await gameReady.call(this);
