@@ -534,6 +534,24 @@ registerCheats({
   ],
 });
 
+// monument
+registerCheats({
+  name: "monument",
+  message: "Monument cheats",
+  canToggleSubcheats: true,
+  subcheats: [
+    {
+      name: "wisdom", message: "wisdom monument minigame cheat",
+      fn: function (params) {
+        setupMonumentProxy.call(this);
+        cheatState.monument[params[0]] = !cheatState.monument[params[0]];
+        return `${cheatState.monument[params[0]] ? "Activated" : "Deactivated"} ${params[0]
+          } monument cheat.`;
+      }
+    },
+  ],
+});
+
 // added by dreamx3 - 2
 // all w6 related proxy cheats
 registerCheats({
@@ -1866,6 +1884,7 @@ async function setup() {
     await gameReady.call(this);
 
     // setup proxies
+
     setupCurrenciesOwnedProxy.call(this);
     setupArbitraryProxy.call(this);
     setupAnvilProxy.call(this);
@@ -3354,6 +3373,29 @@ function setupw5Proxies() {
   // 		return target[property];
   // 	}
   // }));
+}
+
+// monument
+function setupMonumentProxy() {
+
+  // Wisdom monument infinite attempts
+  const wisdomAttempt = bEngine
+    .getGameAttribute("PixelHelperActor")[25]
+    .getValue("ActorEvents_670", "_GenINFO");
+
+  const handlerWisdom = {
+    get: function (originalObject, property) {
+      if (cheatState.monument.wisdom) {
+        if (Number(property) === 194) return 10;
+      }
+      return Reflect.get(...arguments);
+    },
+  };
+
+  const proxyWisdom = new Proxy(wisdomAttempt, handlerWisdom);
+  bEngine
+    .getGameAttribute("PixelHelperActor")[25]
+    .setValue("ActorEvents_670", "_GenINFO", proxyWisdom);
 }
 
 // added by dreamx3 - 1
