@@ -39,7 +39,7 @@ const objToString = (obj) => {
 // Tool initialization messages
 console.log('------------------------------------------------------------------------------------------');
 console.log("Updated version of InjectCheats by Disputate: originally by iBelg, continued by Creater0822, updated by valleymon ");
-console.log('InjectCheatF5 v1.2.1');
+console.log('InjectCheatF5 v1.2.2');
 console.log('------------------------------------------------------------------------------------------');
 console.log('');
 

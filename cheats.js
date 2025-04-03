@@ -345,6 +345,26 @@ registerCheats({
       configurable: { isObject: true },
     },
     { name: "candy", message: "enable candy use everywhere" },
+    {
+      name: "candytime",
+      message: "buffs 1 hr candys in minutes",
+      fn: function (params) {
+        const timeValue = params[1] ? parseInt(params[1]) : 600;
+
+        if (!cheatState.wide[params[0]]) {
+          if (!cheatState.wide.candytime_original) {
+            cheatState.wide.candytime_original = itemDefs["Timecandy1"].h["ID"];
+          }
+          itemDefs["Timecandy1"].h["ID"] = timeValue;
+          cheatState.wide[params[0]] = true;
+          return `1-Hour Candy Time buffed to ${timeValue} minutes AFK time.`;
+        } else {
+          itemDefs["Timecandy1"].h["ID"] = cheatState.wide.candytime_original;
+          cheatState.wide[params[0]] = false;
+          return `1-Hour Candy Time restored to original value.`;
+        }
+      }
+    },
     { name: "eventitems", message: "unlimited event item drops" },
     {
       name: "autoloot",
@@ -533,6 +553,7 @@ registerCheats({
     },
   ],
 });
+
 
 // monument
 registerCheats({
@@ -1884,7 +1905,6 @@ async function setup() {
     await gameReady.call(this);
 
     // setup proxies
-
     setupCurrenciesOwnedProxy.call(this);
     setupArbitraryProxy.call(this);
     setupAnvilProxy.call(this);

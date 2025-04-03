@@ -62,7 +62,7 @@ exports.cheatConfig = {
     companion: {
       companions: [
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-        20, 21, 22, 23,
+        20, 21, 22, 23, 24, 25, 26
       ], // Set the companions you have unlocked (0=doot, down to 23=green mush)
       current: "11", //current companion - Glunko Supreme
     },
