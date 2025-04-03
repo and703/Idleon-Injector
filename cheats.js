@@ -350,19 +350,25 @@ registerCheats({
       message: "buffs 1 hr candys in minutes",
       fn: function (params) {
         const timeValue = params[1] ? parseInt(params[1]) : 600;
+        cheatState.wide.candytime_value = timeValue;
 
-        if (!cheatState.wide[params[0]]) {
-          if (!cheatState.wide.candytime_original) {
-            cheatState.wide.candytime_original = itemDefs["Timecandy1"].h["ID"];
-          }
-          itemDefs["Timecandy1"].h["ID"] = timeValue;
+        if (cheatState.wide[params[0]] && params[1]) {
+          return `1-Hour Candy Time updated to ${timeValue} minutes AFK time.`;
+        } else if (!cheatState.wide[params[0]] && params[1]) {
           cheatState.wide[params[0]] = true;
           return `1-Hour Candy Time buffed to ${timeValue} minutes AFK time.`;
-        } else {
-          itemDefs["Timecandy1"].h["ID"] = cheatState.wide.candytime_original;
-          cheatState.wide[params[0]] = false;
-          return `1-Hour Candy Time restored to original value.`;
+        } else if (!params[1]) {
+          cheatState.wide[params[0]] = !cheatState.wide[params[0]];
+          return !cheatState.wide[params[0]] ?
+            `1-Hour Candy Time restored to original value.` :
+            `1-Hour Candy Time buffed to ${cheatState.wide.candytime_value} minutes AFK time.`;
         }
+      }
+    },
+    {
+      name: "maxkeychainstats", message: "only max keychain stats when rolling them", fn: function (params) {
+        cheatState.wide.maxkeychainstats = !cheatState.wide.maxkeychainstats;
+        return `${cheatState.wide.maxkeychainstats ? "Activated" : "Deactivated"} max keychain stats cheat.`;
       }
     },
     { name: "eventitems", message: "unlimited event item drops" },
@@ -437,7 +443,7 @@ registerCheats({
   ],
 });
 
-// All w3 related Proxy cheats
+// All w2 related Proxy cheats
 registerCheats({
   name: "w2",
   message: "World 2 cheats",
@@ -1905,6 +1911,7 @@ async function setup() {
     await gameReady.call(this);
 
     // setup proxies
+    setupTimeCandyProxy.call(this);
     setupCurrenciesOwnedProxy.call(this);
     setupArbitraryProxy.call(this);
     setupAnvilProxy.call(this);
@@ -1935,6 +1942,7 @@ async function setup() {
     setupMonsterProxy.call(this);
     setupHPProxy.call(this);
     setupCreateElementProxy.call(iframe);
+    setupKeychainProxy.call(this);
     // setupBuffsActiveProxy.call(this); // unused at present
     // setupBuffsProxy.call(this); // unused at present
 
@@ -2326,6 +2334,24 @@ function setupItemMiscProxy() {
       }
       return Reflect.apply(originalFn, context, argumentsList);
     },
+  });
+}
+
+function setupTimeCandyProxy() {
+  const timeCandy = itemDefs["Timecandy1"].h;
+  const originalID = timeCandy["ID"];
+
+  Object.defineProperty(timeCandy, "ID", {
+    get: function () {
+      return cheatState.wide.candytime ? cheatState.wide.candytime_value : originalID;
+    },
+    set: function (value) {
+      if (!cheatState.wide.candytime) {
+        return originalID;
+      }
+      return value;
+    },
+    enumerable: true
   });
 }
 
@@ -3848,6 +3874,24 @@ async function getAutoCompleteSuggestions() {
     return choices;
   }
 } // Added missing closing brace for getAutoCompleteSuggestions
+
+function setupKeychainProxy() {
+  const dungKeychains = CList.DungKEYCHAINS;
+  const handler = {
+    get: function (target, prop) {
+      const originalValue = Reflect.get(target, prop);
+      if (cheatState.wide.maxkeychainstats && typeof originalValue === 'object' && originalValue !== null && Array.isArray(originalValue) && originalValue.length >= 5) {
+        // Return a modified copy to avoid changing the original array directly
+        const modifiedValue = [...originalValue];
+        modifiedValue[2] = String(originalValue[4]); // Current stat
+        modifiedValue[3] = String(originalValue[4]); // Max stat
+        return modifiedValue;
+      }
+      return originalValue;
+    }
+  };
+  CList.DungKEYCHAINS = new Proxy(dungKeychains, handler);
+}
 
 // These choices won't execute immediately when you hit enter, they will allow you to add additional input such as a number if you like, then execute the second time you press enter
 async function getChoicesNeedingConfirmation() {
