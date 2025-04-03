@@ -2149,9 +2149,9 @@ function setupAutoLootProxy() {
         context._DungItemStatus === 0 &&
         context._PlayerDroppedItem === 0 &&
         actorEvents345._customBlock_Dungon() === -1 &&
-        bEngine.getGameAttribute("ItemDefinitionsGET").h[context._DropType] &&
+        itemDefs[context._DropType] &&
         (/.*(LOG|ORE|LEAF|FISH|BUG|CRITTER|SOUL|FOOD|STATUE|TELEPORT|FISHING_ACCESSORY|OFFICE_PEN|BOSS_KEY|FRAGMENT|UPGRADE|MONSTER_DROP|MATERIAL|CARD).*/i.test(
-          bEngine.getGameAttribute("ItemDefinitionsGET").h[context._DropType].h.Type
+          itemDefs[context._DropType].h.Type
         ) ||
           ["COIN", "Quest22", "Quest23", "Quest24"].includes(context._DropType))
       ) {
@@ -2207,9 +2207,9 @@ function setupAutoLootProxy() {
   // 		this._DungItemStatus === 0 &&
   // 		this._PlayerDroppedItem === 0 &&
   // 		actorEvents345._customBlock_Dungon() === -1 &&
-  // 		bEngine.getGameAttribute("ItemDefinitionsGET").h[this._DropType] &&
+  // 		itemDefs[this._DropType] &&
   // 		(/.*(LOG|ORE|LEAF|FISH|BUG|CRITTER|SOUL|FOOD|STATUE|TELEPORT|FISHING_ACCESSORY|OFFICE_PEN|BOSS_KEY|FRAGMENT|UPGRADE|MONSTER_DROP|MATERIAL).*/i
-  // 			.test(bEngine.getGameAttribute("ItemDefinitionsGET").h[this._DropType].h.Type) || ['COIN', 'Quest22', 'Quest23', 'Quest24'].includes(this._DropType))
+  // 			.test(itemDefs[this._DropType].h.Type) || ['COIN', 'Quest22', 'Quest23', 'Quest24'].includes(this._DropType))
   // 	) {
   // 		do {
   // 			this._CollectedStatus = 0;
@@ -2978,7 +2978,7 @@ function setupAbilityProxy() {
 }
 // Nullify smithing cost
 function setupSmithProxy() {
-  const sizeref = bEngine.getGameAttribute("CustomLists").h["ItemToCraftEXP"];
+  const sizeref = CList["ItemToCraftEXP"];
   const tCustomList = this["scripts.CustomLists"];
 
   const NewReqs = []; // This'll be the new Array where we write our stuff to
@@ -2997,9 +2997,8 @@ function setupSmithProxy() {
 }
 
 function updateCListFuncDict() {
-  const CListAttr = bEngine.getGameAttribute("CustomLists").h;
   CListFuncDict = {
-    AlchemyVialItemsPCT: new Array(CListAttr.AlchemyVialItemsPCT.length).fill(99), // Vials unlock at rollin 1+
+    AlchemyVialItemsPCT: new Array(CList.AlchemyVialItemsPCT.length).fill(99), // Vials unlock at rollin 1+
     SaltLicks: ChangeND(2, "SaltLicks", "0", [2]), // Nullify Saltlick upgrade cost
     RefineryInfo: ChangeND(2, "RefineryInfo", "0", [6, 7, 8, 9, 10, 11]), // Nullify refinery cost
     PrayerInfo: ChangeND(
@@ -3026,12 +3025,11 @@ function updateCListFuncDict() {
 }
 
 function setupCListProxy() {
-  const CListAttr = bEngine.getGameAttribute("CustomLists").h;
-  const originalCListValues = JSON.parse(JSON.stringify(CListAttr));
+  const originalCListValues = JSON.parse(JSON.stringify(CList));
   updateCListFuncDict();
 
   for (const [key, value] of Object.entries(CListFuncDict)) {
-    Object.defineProperty(CListAttr, key, {
+    Object.defineProperty(CList, key, {
       get: function () {
         if (
           (cheatState.cauldron.vialrng && key === "AlchemyVialItemsPCT") ||
@@ -4652,7 +4650,7 @@ function ChangeND(dim, KeyName, repl, elem) {
   let NDArr;
   if (typeof KeyName === "string")
     // Creates a deep-copy
-    NDArr = JSON.parse(JSON.stringify(bEngine.getGameAttribute("CustomLists").h[KeyName]));
+    NDArr = JSON.parse(JSON.stringify(CList[KeyName]));
   else NDArr = KeyName; // Else this KeyName parameter is an object
   if (dim === 4) {
     for (const [index1, element1] of Object.entries(NDArr)) {
