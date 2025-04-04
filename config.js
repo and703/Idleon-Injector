@@ -319,6 +319,7 @@ exports.cheatConfig = {
 exports.injectorConfig = {
   injreg: "\\w+\\.ApplicationMain\\s*?=",
   interceptPattern: "*N.js",
-  showConsoleLog: false,
+  showConsoleLog: true,
   chrome: "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+  enableUI: true,
 };
