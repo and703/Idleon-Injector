@@ -348,28 +348,7 @@ registerCheats({
     {
       name: "candytime",
       message: "buffs 1 hr candys in minutes",
-      fn: function (params) {
-        const timeValue = params[1] ? parseInt(params[1]) : 600;
-        cheatState.wide.candytime_value = timeValue;
-
-        if (cheatState.wide[params[0]] && params[1]) {
-          return `1-Hour Candy Time updated to ${timeValue} minutes AFK time.`;
-        } else if (!cheatState.wide[params[0]] && params[1]) {
-          cheatState.wide[params[0]] = true;
-          return `1-Hour Candy Time buffed to ${timeValue} minutes AFK time.`;
-        } else if (!params[1]) {
-          cheatState.wide[params[0]] = !cheatState.wide[params[0]];
-          return !cheatState.wide[params[0]] ?
-            `1-Hour Candy Time restored to original value.` :
-            `1-Hour Candy Time buffed to ${cheatState.wide.candytime_value} minutes AFK time.`;
-        }
-      }
-    },
-    {
-      name: "maxkeychainstats", message: "only max keychain stats when rolling them", fn: function (params) {
-        cheatState.wide.maxkeychainstats = !cheatState.wide.maxkeychainstats;
-        return `${cheatState.wide.maxkeychainstats ? "Activated" : "Deactivated"} max keychain stats cheat.`;
-      }
+      configurable: true,
     },
     { name: "eventitems", message: "unlimited event item drops" },
     {
@@ -2082,6 +2061,15 @@ function setupBehaviorScriptProxies() {
     },
   });
 
+  behavior.randomFloat = new Proxy(behavior.randomFloat, {
+    apply: function (originalFn, context, argumentsList) {
+      if (cheatState["rngF"] === "high") return 1;
+      if (cheatState["rngF"] === "low") return 0;
+      if (cheatState["rngF"]) return cheatState["rng"];
+      return Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
+
   // const randomFloatBetween = behavior.randomFloatBetween;
   // behavior.randomFloatBetween = function(...argumentsList) {
   // 	if (cheatState['rng'] === "high") return argumentsList[1];
@@ -2339,19 +2327,20 @@ function setupItemMiscProxy() {
 
 function setupTimeCandyProxy() {
   const timeCandy = itemDefs["Timecandy1"].h;
-  const originalID = timeCandy["ID"];
+  const originalID = timeCandy["ID"]; // Store the original game value (should be 60)
 
   Object.defineProperty(timeCandy, "ID", {
     get: function () {
-      return cheatState.wide.candytime ? cheatState.wide.candytime_value : originalID;
-    },
-    set: function (value) {
-      if (!cheatState.wide.candytime) {
-        return originalID;
+      if (cheatState.wide.candytime) { // Check if the cheat toggle is active
+        // Check if a specific value is configured, otherwise use a default buffed value
+        const configuredValue = cheatConfig.wide.candytime;
+        return !isNaN(configuredValue) ? configuredValue : 600; // Default to 600 minutes if active but no value set
       }
-      return value;
+      return originalID; // Return the original game value if the cheat is off
     },
-    enumerable: true
+    // No custom setter needed, the getter controls the effective value based on cheat state
+    enumerable: true,
+    configurable: true // Important to allow potential future re-definition if needed
   });
 }
 
@@ -3873,25 +3862,8 @@ async function getAutoCompleteSuggestions() {
   }
 } // Added missing closing brace for getAutoCompleteSuggestions
 
-function setupKeychainProxy() {
-  const dungKeychains = CList.DungKEYCHAINS;
-  const handler = {
-    get: function (target, prop) {
-      const originalValue = Reflect.get(target, prop);
-      if (cheatState.wide.maxkeychainstats && typeof originalValue === 'object' && originalValue !== null && Array.isArray(originalValue) && originalValue.length >= 5) {
-        // Return a modified copy to avoid changing the original array directly
-        const modifiedValue = [...originalValue];
-        modifiedValue[2] = String(originalValue[4]); // Current stat
-        modifiedValue[3] = String(originalValue[4]); // Max stat
-        return modifiedValue;
-      }
-      return originalValue;
-    }
-  };
-  CList.DungKEYCHAINS = new Proxy(dungKeychains, handler);
-}
-
 // These choices won't execute immediately when you hit enter, they will allow you to add additional input such as a number if you like, then execute the second time you press enter
+// This is now also used to make a value field for the ui
 async function getChoicesNeedingConfirmation() {
   return [
     "drop",
@@ -3900,11 +3872,12 @@ async function getChoicesNeedingConfirmation() {
     "w4 chipbonuses",
     "search",
     "wide gembuylimit",
+    "wide candytime",
     "gga",
     "multiply",
     "summoning",
     "ninjaItem",
-    "keychain",
+    // "keychain", why is this here?
   ];
 }
 
