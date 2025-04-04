@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Idleon cheats",
   "main": "main.js",
+  "bin": "main.js",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -13,10 +14,16 @@
     "chrome-remote-interface": "^0.31.3",
     "data-store": "^3.1.0",
     "enquirer": "^2.3.6",
+    "express": "^5.1.0",
     "lodash": "^4.17.21",
     "prompt": "^1.3.0"
   },
   "scripts": {
-    "build": "pkg main.js -t node18-win-x64 --compress Gzip --output InjectCheatsF5.exe"
+    "build": "pkg . -t node18-win-x64 --compress Gzip --output InjectCheatsUI.exe"
+  },
+  "pkg": {
+    "assets": [
+      "ui/**/*"
+    ]
   }
 }

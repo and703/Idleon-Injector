@@ -6,6 +6,8 @@ const fs = require('fs').promises;
 const atob = require('atob');
 const btoa = require('btoa');
 const Enquirer = require('enquirer');
+const express = require('express'); // Added for web UI
+const path = require('path'); // Added for static file serving
 
 // Converts a JavaScript object (potentially with functions) into a string representation
 // suitable for injection into the target environment. Functions are converted to their string form.
@@ -58,6 +60,20 @@ try {
 const injectorConfig = config.injectorConfig;
 const startupCheats = config.startupCheats;
 const cheatConfig = config.cheatConfig;
+
+// --- Web Server Setup ---
+const app = express();
+const web_port = 8080; // Port for the web UI
+app.use(express.json()); // Middleware to parse JSON request bodies
+
+// Serve static files (CSS, JS) from the 'ui' directory
+app.use(express.static(path.join(__dirname, 'ui')));
+
+// Explicitly serve index.html for the root path
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'ui', 'index.html'));
+});
+// --- End Web Server Setup ---
 
 console.log('Options:');
 console.log(`Regex: ${injectorConfig.injreg}`);
@@ -213,8 +229,10 @@ async function setupIntercept(hook) {
 
     const { Runtime, Page } = client;
 
+    console.log("Attaching Page.loadEventFired listener..."); // Added for diagnostics
     // Wait for the page's load event to ensure the DOM, including the iframe, is ready.
     Page.loadEventFired(async () => {
+      console.log(">>> Page.loadEventFired callback started."); // Added for diagnostics
       // Wrap event handler logic in try-catch.
       try {
         console.log("Page load event fired.");
@@ -327,7 +345,74 @@ async function setupIntercept(hook) {
             await promptUser(); // Be cautious with recursion on error
           }
         }
-        // Start the initial user prompt loop.
+
+        // --- API Endpoints ---
+        app.get('/api/cheats', async (req, res) => {
+          try {
+            const suggestionsResult = await Runtime.evaluate({ expression: `getAutoCompleteSuggestions.call(${context})`, awaitPromise: true, returnByValue: true });
+            if (suggestionsResult.exceptionDetails) {
+              console.error("API Error getting autocomplete suggestions:", suggestionsResult.exceptionDetails.text);
+              res.status(500).json({ error: 'Failed to get cheats from game', details: suggestionsResult.exceptionDetails.text });
+            } else {
+              res.json(suggestionsResult.result.value || []);
+            }
+          } catch (apiError) {
+            console.error("API Error in /api/cheats:", apiError);
+            res.status(500).json({ error: 'Internal server error while fetching cheats' });
+          }
+        });
+
+        app.post('/api/toggle', async (req, res) => {
+          const { action } = req.body;
+          if (!action) {
+            return res.status(400).json({ error: 'Missing action parameter' });
+          }
+          try {
+            // Execute the selected cheat command within the game's context.
+            const cheatResponse = await Runtime.evaluate({ expression: `cheat.call(${context}, '${action}')`, awaitPromise: true, allowUnsafeEvalBlockedByCSP: true });
+            if (cheatResponse.exceptionDetails) {
+              console.error(`API Error executing cheat '${action}':`, cheatResponse.exceptionDetails.text);
+              res.status(500).json({ error: `Failed to execute cheat '${action}'`, details: cheatResponse.exceptionDetails.text });
+            } else {
+              console.log(`[Web UI] Executed: ${action} -> ${cheatResponse.result.value}`);
+              res.json({ result: cheatResponse.result.value });
+            }
+          } catch (apiError) {
+            console.error(`API Error executing cheat '${action}':`, apiError);
+            res.status(500).json({ error: `Internal server error while executing cheat '${action}'` });
+          }
+        });
+
+        // New endpoint to get cheats needing confirmation
+        app.get('/api/needs-confirmation', async (req, res) => {
+          try {
+            const confirmationResult = await Runtime.evaluate({ expression: `getChoicesNeedingConfirmation.call(${context})`, awaitPromise: true, returnByValue: true });
+            if (confirmationResult.exceptionDetails) {
+              console.error("API Error getting confirmation choices:", confirmationResult.exceptionDetails.text);
+              res.status(500).json({ error: 'Failed to get confirmation list from game', details: confirmationResult.exceptionDetails.text });
+            } else {
+              res.json(confirmationResult.result.value || []);
+            }
+          } catch (apiError) {
+            console.error("API Error in /api/needs-confirmation:", apiError);
+            res.status(500).json({ error: 'Internal server error while fetching confirmation list' });
+          }
+        });
+        // --- End API Endpoints ---
+
+        // --- Start Web Server ---
+        app.listen(web_port, () => {
+          console.log(`\n--------------------------------------------------`);
+          console.log(`Web UI available at: http://localhost:${web_port}`);
+          console.log(`--------------------------------------------------\n`);
+        }).on('error', (err) => {
+          console.error('Failed to start web server:', err);
+          // Decide if we should exit or just continue with CLI only
+        });
+        // --- End Start Web Server ---
+
+
+        // Start the initial user prompt loop (CLI).
         await promptUser();
       } catch (loadEventError) {
         console.error("Error during Page.loadEventFired handler:", loadEventError);
