@@ -1921,7 +1921,6 @@ async function setup() {
     setupMonsterProxy.call(this);
     setupHPProxy.call(this);
     setupCreateElementProxy.call(iframe);
-    setupKeychainProxy.call(this);
     // setupBuffsActiveProxy.call(this); // unused at present
     // setupBuffsProxy.call(this); // unused at present
 
