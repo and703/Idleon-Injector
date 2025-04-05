@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingCheatsP = document.getElementById('loading-cheats'); // Get the loading paragraph
     const filterInput = document.getElementById('filter-input'); // Get filter input
     const statusMessageDiv = document.getElementById('status-message');
-    // Removed consoleInput, sendCommandButton, consoleOutput
     const toggleDevtoolsButton = document.getElementById('toggle-devtools-button'); // New DevTools toggle button
     const devtoolsIframe = document.getElementById('devtools-iframe'); // New DevTools iframe
     const devtoolsMessage = document.getElementById('devtools-message'); // New DevTools warning message
@@ -48,8 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Removed executeJsCommand function
-
 
     // Function to fetch cheats, group them, and display them
     async function loadCheats() {
@@ -87,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const categoryHeaders = new Set();
             allCheatButtons = []; // Reset button list for filtering
 
-            // 1. Identify single-word commands as category headers
+            // Identify single-word commands as category headers
             cheats.forEach(cheat => {
                 const cheatValue = typeof cheat === 'object' ? cheat.value : cheat;
                 if (cheatValue && !cheatValue.includes(' ')) {
@@ -95,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // 2. Group cheats
+            // Group cheats
             cheats.forEach(cheat => {
                 const cheatValue = typeof cheat === 'object' ? cheat.value : cheat;
                 const cheatName = typeof cheat === 'object' ? cheat.message : cheat; // Use message for display
@@ -202,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const filterText = e.target.value.toLowerCase();
                     let visibleCategories = new Set(); // Keep track of categories with visible items
 
-                    // 1. Filter individual cheat items
+                    // Filter individual cheat items
                     allCheatButtons.forEach(itemContainer => {
                         const button = itemContainer.querySelector('.cheat-button');
                         const buttonText = button.textContent.toLowerCase();
@@ -218,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
 
-                    // 2. Show/Hide entire category groups based on visible items
+                    // Show/Hide entire category groups based on visible items
                     const allCategories = cheatListDiv.querySelectorAll('.cheat-category');
                     allCategories.forEach(categoryDetails => {
                         if (visibleCategories.has(categoryDetails)) {
@@ -241,8 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-
-    // Removed Console Command Button Listener
 
     // --- Add Listener for DevTools Toggle Button ---
     if (toggleDevtoolsButton && devtoolsIframe && devtoolsMessage) {
