@@ -2069,13 +2069,6 @@ function setupBehaviorScriptProxies() {
     },
   });
 
-  // const randomFloatBetween = behavior.randomFloatBetween;
-  // behavior.randomFloatBetween = function(...argumentsList) {
-  // 	if (cheatState['rng'] === "high") return argumentsList[1];
-  // 	if (cheatState['rng'] === "low") return argumentsList[0];
-  // 	return Reflect.apply(randomFloatBetween, this, argumentsList);
-  // };
-
   // Proxy:
   behavior.runLater = new Proxy(behavior.runLater, {
     apply: function (originalFn, context, argumentsList) {
@@ -2093,16 +2086,6 @@ function setupBehaviorScriptProxies() {
     },
   });
 
-  // const runLater = behavior.runLater;
-  // behavior.runLater = function(...argumentsList) {
-  // 	try {
-  // 		if (cheatState.godlike.intervention && argumentsList[0] == 2400 && argumentsList[2]['behaviors']['behaviors'][0]['name'] == "ActorEvents_481") {
-  // 				argumentsList[0] = 0;
-  // 		}
-  // 	} catch (e) {}
-
-  // 	Reflect.apply(runLater, this, argumentsList);
-  // };
 
   behavior.runPeriodically = new Proxy(behavior.runPeriodically, {
     apply: function (originalFn, context, argumentsList) {
@@ -2184,55 +2167,6 @@ function setupAutoLootProxy() {
     },
   });
 
-  // const init = actorEvents44.prototype.init;
-  // actorEvents44.prototype.init = function (...argumentsList) {
-  // 	let rtn = Reflect.apply(init, this, argumentsList);
-  // 	if (
-  // 		cheatState.wide.autoloot &&
-  // 		bEngine.getGameAttribute("OptionsListAccount")[83] == 0 &&
-  // 		this._BlockAutoLoot === 0 &&
-  // 		this._DungItemStatus === 0 &&
-  // 		this._PlayerDroppedItem === 0 &&
-  // 		actorEvents345._customBlock_Dungon() === -1 &&
-  // 		itemDefs[this._DropType] &&
-  // 		(/.*(LOG|ORE|LEAF|FISH|BUG|CRITTER|SOUL|FOOD|STATUE|TELEPORT|FISHING_ACCESSORY|OFFICE_PEN|BOSS_KEY|FRAGMENT|UPGRADE|MONSTER_DROP|MATERIAL).*/i
-  // 			.test(itemDefs[this._DropType].h.Type) || ['COIN', 'Quest22', 'Quest23', 'Quest24'].includes(this._DropType))
-  // 	) {
-  // 		do {
-  // 			this._CollectedStatus = 0;
-  // 			bEngine.gameAttributes.h.DummyNumber4 = 23.34;
-  // 			this._customEvent_ItemPickupInTheFirstPlace();
-  // 			if (this._DropType == 'COIN') {
-  // 				cheatConfig.wide.autoloot.tochest ?
-  // 					(bEngine.gameAttributes.h.MoneyBANK = bEngine.getGameAttribute("MoneyBANK") + this._DropAmount) :
-  // 					(bEngine.gameAttributes.h.Money = bEngine.getGameAttribute("Money") + this._DropAmount);
-  // 				this._ImageInst = null;
-  // 				behavior.recycleActor(this.actor);
-  // 				return;
-  // 			}
-  // 			if (cheatConfig.wide.autoloot.tochest) {
-  // 				let chestSlot = bEngine.getGameAttribute("ChestOrder").indexOf(this._DropType) != -1 ?
-  // 					bEngine.getGameAttribute("ChestOrder").indexOf(this._DropType) : bEngine.getGameAttribute("ChestOrder").indexOf('Blank');
-  // 				if (bEngine.getGameAttribute("ChestOrder")[chestSlot] == 'Blank') bEngine.getGameAttribute("ChestOrder")[chestSlot] = this._DropType;
-  // 				let inventorySlot = bEngine.getGameAttribute("InventoryOrder").indexOf(this._DropType);
-  // 				while (chestSlot !== -1 && inventorySlot !== -1) {
-  // 					bEngine.getGameAttribute('ChestQuantity')[chestSlot] += bEngine.getGameAttribute('ItemQuantity')[inventorySlot];
-  // 					bEngine.getGameAttribute('ItemQuantity')[inventorySlot] = 0;
-  // 					bEngine.getGameAttribute("InventoryOrder")[inventorySlot] = 'Blank';
-  // 					inventorySlot = bEngine.getGameAttribute("InventoryOrder").indexOf(this._DropType);
-  // 				}
-  // 			}
-  // 		} while (this._DropAmount > 0 && cheatConfig.wide.autoloot.tochest);
-  // 		if (this._DropAmount == 0) {
-  // 			this._ImageInst = null;
-  // 			behavior.recycleActor(this.actor);
-  // 		} else {
-  // 			this._CollectedStatus = 0;
-  // 		}
-  // 	}
-  // 	return rtn;
-  // };
-
   // Proxy:
   const hxOverrides = this["HxOverrides"];
   events(34).prototype._event_ItemGet = new Proxy(events(34).prototype._event_ItemGet, {
@@ -2246,13 +2180,6 @@ function setupAutoLootProxy() {
     },
   });
 
-  // const hxOverrides = this["HxOverrides"];
-  // const eventItemGet = events(34).prototype._event_ItemGet;
-  // events(34).prototype._event_ItemGet = function(...argumentsList) {
-  // 	return cheatState.wide.autoloot && cheatConfig.wide.autoloot.hidenotifications && [0, 1].includes(this._Deployment) ?
-  // 		(hxOverrides.remove(bEngine.getGameAttribute("ItemGetPixelQueue"), argumentsList[0].actor), behavior.recycleActor(argumentsList[0].actor)) :
-  // 		Reflect.apply(eventItemGet, this, argumentsList);
-  // };
 }
 
 function setupCreateElementProxy() {
@@ -2455,29 +2382,6 @@ function setupItemsMenuProxy() {
 
 // Unlock quick references
 function setupOptionsListAccountProxy() {
-  // const optionsListAccount = bEngine.getGameAttribute("OptionsListAccount");
-  // const handler = {
-  // 	get: function (obj, prop) {
-  // 		if (cheatConfig.unban && Number(prop) === 26) return 0;
-  // 		if (cheatState.wide.eventitems && Number(prop) === 29) return 0;
-  // 		if (cheatState.w4.spiceclaim && Number(prop) === 100) return 0;
-  // 		if (cheatState.unlock.quickref && Number(prop) === 34) return 0;
-  //         if (cheatState.minigames && Number(prop) === 33) return obj[33] || 1;
-  //         if (cheatState.w4.arena && Number(prop) === 88) return 1;
-  // 		return obj[prop];
-  // 	},
-  // 	set: function (obj, prop, value) {
-  // 		if (cheatConfig.unban && Number(prop) === 26 ) return true;
-  // 		if (cheatState.wide.eventitems && Number(prop) === 29) return true;
-  // 		if (cheatState.minigames && Number(prop) === 33) {
-  // 			obj[prop] = obj[prop] || 1;
-  // 			return true;
-  // 		} return obj[prop] = value;
-  // 	}
-  // };
-  // const proxy = new Proxy(optionsListAccount, handler);
-  // bEngine.setGameAttribute("OptionsListAccount", proxy);
-
   // Using defineProperties instead of Proxy
   const optionsListAccount = bEngine.getGameAttribute("OptionsListAccount");
   optionsListAccount._26 = optionsListAccount[26];
@@ -2626,53 +2530,7 @@ function setupValuesMapProxy() {
     },
     enumerable: true,
   });
-
-  // const handler = {
-  // 	get: function(obj, prop) {
-  // 		if (cheatState.unlock.revive && prop === "InstaRevives") return obj[prop] || 10;
-  // 		return Reflect.get(...arguments);
-  // 	},
-  // 	set: function(obj, prop, value) {
-  // 		if (cheatState.unlock.revive && prop === "InstaRevives"){
-  // 			obj[prop] = obj[prop] || 10;
-  // 			return true;
-  // 		}
-  // 		return Reflect.set(...arguments);
-  // 	}
-  // };
-  // const proxy = new Proxy(personalValuesMap, handler);
-  // bEngine.getGameAttribute("PersonalValuesMap").h = proxy;
 }
-
-// Buffs never run out
-// function setupBuffsActiveProxy() {
-// 	const BuffsActive = bEngine.getGameAttribute("BuffsActive");
-// 	const handler = {
-// 		get: function(obj, prop) {
-// 			if (cheatState.godlike.buff && typeof obj[prop][1] != "undefined") obj[prop][1] = 5; // Trap at 5 seconds left
-// 			return Reflect.get(...arguments);
-// 		},
-// 		set: function(obj, prop, value) {
-// 			if (cheatState.godlike.buff && typeof obj[prop][1] != "undefined"){
-// 				obj[prop][1] = 5;
-// 				return true;
-// 			} return Reflect.set(...arguments);
-// 		}
-// 	};
-// 	const proxy = new Proxy(BuffsActive, handler);
-// 	bEngine.setGameAttribute("BuffsActive", proxy);
-// }
-
-// function setupBuffsProxy() {
-// 	const actorEvents12 = events(12);
-
-// 	actorEvents12._customBlock_GetBuffBonuses = new Proxy(actorEvents12._customBlock_GetBuffBonuses, {
-// 		apply: function (originalFn, context, argumentsList) {
-
-// 			return Reflect.apply(originalFn, context, argumentsList);
-// 		}
-// 	});
-// }
 
 // Stop cloud saving, once re-enabled it'll proc a save in 2 seconds.
 function setupCloudSaveProxy() {
@@ -3070,12 +2928,6 @@ function setupQuestProxy() {
             dialogueDefsUpdated[key][1][i][3][j] = 0;
       }
 
-  // dialogueDefs = new Proxy(dialogueDefs, {
-  // 	get: function(obj, prop) {
-  // 		if (cheatState.wide.quest) return dialogueDefsC[prop];
-  // 		return Reflect.get(...arguments);
-  // 	}
-  // });
 
   for (const [key, value] of Object.entries(dialogueDefsUpdated)) {
     Object.defineProperty(dialogueDefs, key, {
@@ -3100,15 +2952,6 @@ function setupAlchProxy() {
     enumerable: true,
   });
 
-  // 	new Proxy(bEngine.getGameAttribute("CauldronP2W"), {
-  // 	get: function(obj, prop) {
-  // 		if (cheatState.cauldron.vialattempt && obj[5][0] < obj[5][1]) {
-  // 			obj[5][0] = obj[5][1];
-  // 			return obj;
-  // 		}
-  // 		return obj[prop];
-  // 	}
-  // });
 
   events(189)._customBlock_CauldronStats = new Proxy(events(189)._customBlock_CauldronStats, {
     apply: function (originalFn, context, argumentsList) {
@@ -3369,13 +3212,6 @@ function setupw5Proxies() {
     },
   });
 
-  // const RiftStuff = actorEvents579._customBlock_RiftStuff;
-  // actorEvents579._customBlock_RiftStuff = function (...argumentsList) {
-  // 	if (cheatState.unlock.rifts && argumentsList[0] == "RiftCompleted") {
-  // 		return CList.RiftStuff[4][bEngine.getGameAttribute("Rift")[0]] == 9 ? 0 : 1;
-  // 	}
-  // 	return RiftS;
-  // }
 
   const RiftAttr = bEngine.getGameAttribute("Rift");
   RiftAttr._1 = RiftAttr[1];
@@ -3399,12 +3235,6 @@ function setupw5Proxies() {
     return Reflect.apply(DreamStuff, this, argumentsList);
   };
 
-  // bEngine.setGameAttribute("Divinity", new Proxy(bEngine.getGameAttribute("Divinity"), {
-  // 	get: function (target, property) {
-  // 		if (cheatState.w5.divinity && cheatConfig.w5.divinity.unlinks && property == 38) return 1;
-  // 		return target[property];
-  // 	}
-  // }));
 }
 
 // monument
