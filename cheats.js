@@ -454,6 +454,7 @@ registerCheats({
     { name: "freeworship", message: "nullification of worship charge cost" },
     { name: "globalshrines", message: "global shrines" },
     { name: "instantdreams", message: "Dream bar fills instantly" },
+    { name: "bettercog", message: "Gives you a bit better cog chances" },
   ],
 });
 
@@ -1890,6 +1891,8 @@ async function setup() {
     await gameReady.call(this);
 
     // setup proxies
+    setupBetterCogsProxy.call(this);
+
     setupTimeCandyProxy.call(this);
     setupCurrenciesOwnedProxy.call(this);
     setupArbitraryProxy.call(this);
@@ -1921,12 +1924,7 @@ async function setup() {
     setupMonsterProxy.call(this);
     setupHPProxy.call(this);
     setupCreateElementProxy.call(iframe);
-    // setupBuffsActiveProxy.call(this); // unused at present
-    // setupBuffsProxy.call(this); // unused at present
 
-    // This stops the steamachieve34/35 bug. This function is in steam.js.
-    // The name is generated so it may well change between versions and need updating here
-    // changed for a solution not relying on the name.
     window[0].agIis = function () { };
 
     console.log('Registering "cheats" command...'); // Added for diagnostics
@@ -2222,6 +2220,21 @@ function setupCreateElementProxy() {
   });
 }
 
+function setupBetterCogsProxy() {
+  events(481).prototype._customEvent_WorkbenchStuff2 = new Proxy(events(481).prototype._customEvent_WorkbenchStuff2, {
+    apply: function (originalFn, context, argumentsList) {
+      try {
+        if (-1 != context._TRIGGEREDtext.indexOf("k")) {
+          console.log("Better Cogs Proxy triggered with k in text");
+        }
+      } catch (e) {
+        console.error("Error in Better Cogs Proxy:", e);
+      }
+      return Reflect.apply(originalFn, context, argumentsList);
+    },
+  });
+}
+
 // Proxy for Mystery Stones always hitting the Misc stat if possible.
 function setupItemMiscProxy() {
   events(38).prototype._event_InventoryItem = new Proxy(events(38).prototype._event_InventoryItem, {
@@ -2253,20 +2266,18 @@ function setupItemMiscProxy() {
 
 function setupTimeCandyProxy() {
   const timeCandy = itemDefs["Timecandy1"].h;
-  const originalID = timeCandy["ID"]; // Store the original game value (should be 60)
+  const originalID = timeCandy["ID"];
 
   Object.defineProperty(timeCandy, "ID", {
     get: function () {
-      if (cheatState.wide.candytime) { // Check if the cheat toggle is active
-        // Check if a specific value is configured, otherwise use a default buffed value
+      if (cheatState.wide.candytime) {
         const configuredValue = cheatConfig.wide.candytime;
-        return !isNaN(configuredValue) ? configuredValue : 600; // Default to 600 minutes if active but no value set
+        return !isNaN(configuredValue) ? configuredValue : 600;
       }
-      return originalID; // Return the original game value if the cheat is off
+      return originalID;
     },
-    // No custom setter needed, the getter controls the effective value based on cheat state
     enumerable: true,
-    configurable: true // Important to allow potential future re-definition if needed
+    configurable: true
   });
 }
 
