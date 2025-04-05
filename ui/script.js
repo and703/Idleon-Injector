@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.url) {
                         devtoolsIframe.src = data.url;
                         devtoolsLoaded = true; // Mark as loaded
-                        devtoolsMessage.textContent = 'Note: Embedding might be blocked by browser security (X-Frame-Options). If blank, it is likely blocked.'; // Update message
+                        devtoolsMessage.textContent = 'Note: Only use this if you really know what you are doing!';
                         console.log('Set DevTools iframe src:', data.url);
                     } else {
                         throw new Error('No URL received from backend.');
