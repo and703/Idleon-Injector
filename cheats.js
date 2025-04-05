@@ -2062,8 +2062,8 @@ function setupBehaviorScriptProxies() {
 
   behavior.randomFloat = new Proxy(behavior.randomFloat, {
     apply: function (originalFn, context, argumentsList) {
-      if (cheatState["rngF"] === "high") return 1;
-      if (cheatState["rngF"] === "low") return 0;
+      if (cheatState["rngF"] === "high") return 1.0;
+      if (cheatState["rngF"] === "low") return 0.0;
       if (cheatState["rngF"]) return cheatState["rng"];
       return Reflect.apply(originalFn, context, argumentsList);
     },

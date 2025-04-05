@@ -404,7 +404,73 @@ async function setupIntercept(hook) {
               res.status(500).json({ error: 'Internal server error while fetching confirmation list' });
             }
           });
-          // --- End API Endpoints ---
+
+          // --- New API Endpoint for Executing JS ---
+          app.post('/api/execute-js', async (req, res) => {
+            const { command } = req.body;
+            if (!command) {
+              return res.status(400).json({ error: 'Missing command parameter' });
+            }
+
+            // Ensure context is still valid (optional, but good practice)
+            const contextExists = await Runtime.evaluate({ expression: `!!${context}` });
+            if (!contextExists.result.value) {
+              console.error("API Error: Cheat context not found in iframe. Cannot execute command.");
+              return res.status(500).json({ error: 'Game context lost. Injection might have failed or page reloaded.' });
+            }
+
+            console.log(`[Web UI] Executing JS: ${command}`);
+            try {
+              // Execute the command string within the game's context.
+              // returnByValue is important to get complex objects back.
+              // awaitPromise handles async results from the executed command.
+              const executionResult = await Runtime.evaluate({
+                expression: command, // Execute the raw command string
+                contextId: init.result.executionContextId, // Execute in the same context as cheats
+                returnByValue: true, // Get serializable result
+                awaitPromise: true, // Wait for promises in the command to resolve
+                allowUnsafeEvalBlockedByCSP: true // May be needed depending on context
+              });
+
+              if (executionResult.exceptionDetails) {
+                console.error(`API Error executing JS '${command}':`, executionResult.exceptionDetails.text);
+                // Send back the error details from the browser console
+                res.status(500).json({ error: `Execution failed`, details: executionResult.exceptionDetails.text });
+              } else {
+                console.log(`[Web UI] JS Execution Result:`, executionResult.result.value);
+                // Send back the successful result
+                res.json({ result: executionResult.result.value });
+              }
+            } catch (apiError) {
+              console.error(`API Error executing JS '${command}':`, apiError);
+              res.status(500).json({ error: `Internal server error while executing JS command`, details: apiError.message });
+            }
+          });
+          // --- End New API Endpoint ---
+
+          // --- New API Endpoint for DevTools URL ---
+          app.get('/api/devtools-url', async (req, res) => {
+            try {
+              // Use the existing CDP client to get target info
+              const response = await client.Target.getTargetInfo();
+              if (response && response.targetInfo && response.targetInfo.targetId) {
+                const targetId = response.targetInfo.targetId;
+                // Construct the DevTools URL
+                // Note: Using http, not ws, for the main URL. The ws part is a parameter.
+                const devtoolsUrl = `http://localhost:${cdp_port}/devtools/inspector.html?ws=localhost:${cdp_port}/devtools/page/${targetId}`;
+                console.log(`[Web UI] Generated DevTools URL: ${devtoolsUrl}`);
+                res.json({ url: devtoolsUrl });
+              } else {
+                console.error("API Error: Could not get target info to generate DevTools URL.");
+                res.status(500).json({ error: 'Failed to get target information from CDP client.' });
+              }
+            } catch (apiError) {
+              console.error("API Error getting DevTools URL:", apiError);
+              res.status(500).json({ error: 'Internal server error while fetching DevTools URL', details: apiError.message });
+            }
+          });
+          // --- End DevTools URL Endpoint ---
+
 
           // --- Start Web Server ---
           app.listen(web_port, () => {

@@ -1,7 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const cheatListDiv = document.getElementById('cheat-list');
+    const cheatListDiv = document.getElementById('cheat-buttons'); // Target the button container now
+    const loadingCheatsP = document.getElementById('loading-cheats'); // Get the loading paragraph
+    const filterInput = document.getElementById('filter-input'); // Get filter input
     const statusMessageDiv = document.getElementById('status-message');
+    // Removed consoleInput, sendCommandButton, consoleOutput
+    const toggleDevtoolsButton = document.getElementById('toggle-devtools-button'); // New DevTools toggle button
+    const devtoolsIframe = document.getElementById('devtools-iframe'); // New DevTools iframe
+    const devtoolsMessage = document.getElementById('devtools-message'); // New DevTools warning message
+    let allCheatButtons = []; // To store all buttons for filtering
     let cheatsNeedingConfirmation = []; // Store cheats that need a value
+    let devtoolsLoaded = false; // Flag to track if URL has been loaded
 
     // Function to display status messages
     function showStatus(message, isError = false) {
@@ -40,14 +48,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Removed executeJsCommand function
+
+
     // Function to fetch cheats, group them, and display them
     async function loadCheats() {
         try {
             // Fetch both cheats and the list needing confirmation
             const [cheatsResponse, confirmationResponse] = await Promise.all([
                 fetch('/api/cheats'),
-                fetch('/api/needs-confirmation') // Fetch the new list
+                fetch('/api/needs-confirmation')
             ]);
+
+            // Hide loading message once fetches start resolving
+            if (loadingCheatsP) loadingCheatsP.style.display = 'none';
 
             if (!cheatsResponse.ok) {
                 throw new Error(`HTTP error fetching cheats! status: ${cheatsResponse.status}`);
@@ -69,8 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // --- Grouping Logic ---
-            const groupedCheats = { 'General': [] };
+            const groupedCheats = {}; // Start empty, don't assume 'General' exists
             const categoryHeaders = new Set();
+            allCheatButtons = []; // Reset button list for filtering
 
             // 1. Identify single-word commands as category headers
             cheats.forEach(cheat => {
@@ -176,14 +191,102 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 details.appendChild(categoryContent);
-                cheatListDiv.appendChild(details);
+                cheatListDiv.appendChild(details); // Append to the button container
+                // Store buttons for filtering
+                categoryContent.querySelectorAll('.cheat-item-container').forEach(item => allCheatButtons.push(item));
             });
+
+            // Add filter listener after buttons are created
+            if (filterInput && cheatListDiv) { // Ensure cheatListDiv is available
+                filterInput.addEventListener('input', (e) => {
+                    const filterText = e.target.value.toLowerCase();
+                    let visibleCategories = new Set(); // Keep track of categories with visible items
+
+                    // 1. Filter individual cheat items
+                    allCheatButtons.forEach(itemContainer => {
+                        const button = itemContainer.querySelector('.cheat-button');
+                        const buttonText = button.textContent.toLowerCase();
+                        const categoryDetails = itemContainer.closest('.cheat-category'); // Find parent category
+
+                        if (buttonText.includes(filterText)) {
+                            itemContainer.style.display = ''; // Show item
+                            if (categoryDetails) {
+                                visibleCategories.add(categoryDetails); // Mark category as having visible items
+                            }
+                        } else {
+                            itemContainer.style.display = 'none'; // Hide item
+                        }
+                    });
+
+                    // 2. Show/Hide entire category groups based on visible items
+                    const allCategories = cheatListDiv.querySelectorAll('.cheat-category');
+                    allCategories.forEach(categoryDetails => {
+                        if (visibleCategories.has(categoryDetails)) {
+                            categoryDetails.style.display = ''; // Show category group
+                        } else {
+                            categoryDetails.style.display = 'none'; // Hide category group
+                        }
+                    });
+                });
+            }
+
 
         } catch (error) {
             console.error('Error loading or processing cheats:', error);
-            cheatListDiv.innerHTML = `<p class="status-error">Error loading cheats: ${error.message}</p>`;
+            if (cheatListDiv) { // Check if div exists before modifying
+                cheatListDiv.innerHTML = `<p class="status-error">Error loading cheats: ${error.message}</p>`;
+            } else if (loadingCheatsP) { // Fallback to loading paragraph if list div isn't there
+                loadingCheatsP.textContent = `Error loading cheats: ${error.message}`;
+                loadingCheatsP.className = 'status-error';
+            }
         }
     }
+
+    // Removed Console Command Button Listener
+
+    // --- Add Listener for DevTools Toggle Button ---
+    if (toggleDevtoolsButton && devtoolsIframe && devtoolsMessage) {
+        toggleDevtoolsButton.addEventListener('click', async () => {
+            // Toggle visibility first
+            const isHidden = devtoolsIframe.style.display === 'none';
+            devtoolsIframe.style.display = isHidden ? 'block' : 'none';
+            devtoolsMessage.style.display = isHidden ? 'block' : 'none'; // Show warning when iframe is shown
+
+            // Fetch and set URL only if showing for the first time
+            if (isHidden && !devtoolsLoaded) {
+                devtoolsIframe.src = ''; // Clear previous src just in case
+                devtoolsMessage.textContent = 'Loading DevTools URL...'; // Indicate loading
+                try {
+                    const response = await fetch('/api/devtools-url');
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.details || errorData.error || `HTTP error! Status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    if (data.url) {
+                        devtoolsIframe.src = data.url;
+                        devtoolsLoaded = true; // Mark as loaded
+                        devtoolsMessage.textContent = 'Note: Embedding might be blocked by browser security (X-Frame-Options). If blank, it is likely blocked.'; // Update message
+                        console.log('Set DevTools iframe src:', data.url);
+                    } else {
+                        throw new Error('No URL received from backend.');
+                    }
+                } catch (error) {
+                    console.error('Error fetching or setting DevTools URL:', error);
+                    devtoolsMessage.textContent = `Error loading DevTools: ${error.message}`;
+                    devtoolsMessage.style.color = 'red'; // Make error more visible
+                    devtoolsIframe.style.display = 'none'; // Hide iframe on error
+                }
+            } else if (!isHidden) {
+                // If hiding, just hide the message too
+                devtoolsMessage.style.display = 'none';
+            }
+        });
+    } else {
+        console.error("DevTools toggle button, iframe, or message element not found!");
+    }
+    // --- End DevTools Listener ---
+
 
     // Initial load
     loadCheats();
