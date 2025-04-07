@@ -44,6 +44,7 @@ console.log("Credits:");
 console.log("iBelg");
 console.log("Creater0822");
 console.log("valleymon");
+console.log("Disputate");
 console.log("and everyone that contributed to this project");
 console.log('------------------------------------------------------------------------------------------');
 console.log('InjectCheatUI v1.0');

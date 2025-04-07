@@ -3454,7 +3454,7 @@ function setupMonumentProxy() {
 
   const handlerWisdom = {
     get: function (originalObject, property) {
-      if (cheatState.monument.wisdom) {
+      if (cheatState.minigame.wisdom) {
         if (Number(property) === 194) return 10;
       }
       return Reflect.get(...arguments);
