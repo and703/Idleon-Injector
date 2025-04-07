@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Idleon cheats",
   "main": "main.js",
-  "bin": "main.js",
+  "bin": {
+    "legends-of-idleon-cheats": "main.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

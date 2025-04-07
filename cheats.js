@@ -241,43 +241,46 @@ registerCheats({
   subcheats: [
     // Helper function to create bundle cheats
     ...(() => {
-      const createBundleCheat = (name, code, desc = "") => ({
-        name,
-        message: code,
+      const createBundleCheat = (name, code) => ({
+        name: code,
+        message: name,
         fn: function () {
           this["FirebaseStorage"].addToMessageQueue("SERVER_CODE", "SERVER_ITEM_BUNDLE", code);
-          return `${name}${desc ? ` (${desc})` : ""} has been bought!`;
+          return `${name} has been bought!`;
         },
       });
 
-      // Bundle definitions - name, code, optional description
+      // Bundle definitions - name, code
       return [
-        ["Lava Supporter Pack", "bun_a", "bun_a"],
-        ["New Year Supporter Pack", "bun_b", "bun_b"],
-        ["Starter Pack", "bun_c", "bun_c"],
-        ["Easter Bundle", "bun_d", "bun_d"],
-        ["Totally Chill Pack", "bun_e", "bun_e"],
-        ["Summer Bundle", "bun_f", "bun_f"],
-        ["Dungeon Bundle", "bun_g", "bun_g"],
-        ["Giftmas Bundle", "bun_h", "bun_h"],
-        ["Auto Loot Pack", "bun_i", "bun_i"],
-        ["Outta This World Pack", "bun_j", "bun_j"],
-        ["Eggscellent Pack", "bun_k", "bun_k"],
-        ["Super Hot Fire Pack", "bun_l", "bun_l"],
-        ["Gem Motherlode Pack", "bun_m", "bun_m"],
-        ["Riftwalker Pack", "bun_n", "bun_n"],
-        ["Bloomin Pet Pack", "bun_o", "bun_o"],
-        ["Island Explorer Pack", "bun_p", "bun_p"],
-        ["Equinox Dreamer Pack", "bun_q", "bun_q"],
-        ["Calm Serenity Pack", "bun_r", "bun_r"],
-        ["Sacred Methods Pack", "bun_s", "bun_s"],
-        ["Timeless Pack", "bun_t", "bun_t"],
-        ["Ancient Echoes Pack", "bun_u", "bun_u"],
-        ["Deathbringer Pack", "bun_v", "bun_v"],
-        ["Valenslime Day Pack", "bun_y", "bun_y"],
-        ["Fallen Spirits Pet Pack", "bun_z", "bun_z"],
-        ["Storage Ram Pack", "bon_a", "bon_a"],
-      ].map(([name, code, desc]) => createBundleCheat(name, code, desc));
+        ["Lava Supporter Pack", "bun_a"],
+        ["New Year Supporter Pack", "bun_b"],
+        ["Starter Pack", "bun_c"],
+        ["Easter Bundle", "bun_d"],
+        ["Totally Chill Pack", "bun_e"],
+        ["Summer Bundle", "bun_f"],
+        ["Dungeon Bundle", "bun_g"],
+        ["Giftmas Bundle", "bun_h"],
+        ["Auto Loot Pack", "bun_i"],
+        ["Outta This World Pack", "bun_j"],
+        ["Eggscellent Pack", "bun_k"],
+        ["Super Hot Fire Pack", "bun_l"],
+        ["Gem Motherlode Pack", "bun_m"],
+        ["Riftwalker Pack", "bun_n"],
+        ["Bloomin Pet Pack", "bun_o"],
+        ["Island Explorer Pack", "bun_p"],
+        ["Equinox Dreamer Pack", "bun_q"],
+        ["Calm Serenity Pack", "bun_r"],
+        ["Sacred Methods Pack", "bun_s"],
+        ["Timeless Pack", "bun_t"],
+        ["Ancient Echoes Pack", "bun_u"],
+        ["Deathbringer Pack", "bun_v"],
+        ["Valenslime Day Pack", "bun_y"],
+        ["Fallen Spirits Pet Pack", "bun_z"],
+        ["Storage Ram Pack", "bon_a"],
+        ["Blazing Star Anniversary Pack", "bon_c"],
+        ["Midnight Tide Anniversary Pack", "bon_d"],
+        ["Lush Emerald Anniversary Pack", "bon_e"],
+      ].map(([name, code]) => createBundleCheat(name, code));
     })(),
   ],
 });
@@ -288,6 +291,7 @@ const minigameCheat = function (params) {
   setupGeneralInfoProxy.call(this);
   setupPoingProxy.call(this);
   setupHoopsMinigameProxy.call(this);
+  setupMonumentProxy.call(this);
   cheatState.minigame[params[0]] = !cheatState.minigame[params[0]];
   return `${cheatState.minigame[params[0]] ? "Activated" : "Deactivated"} ${params[0]
     } minigame cheat.`;
@@ -303,8 +307,11 @@ registerCheats({
     { name: "choppin", message: "choppin minigame cheat", fn: minigameCheat },
     { name: "poing", message: "poing minigame cheat", fn: minigameCheat },
     { name: "hoops", message: "hoops minigame cheat", fn: minigameCheat },
+    { name: "wisdom", message: "wisdom monument minigame cheat", fn: minigameCheat }
   ],
 });
+
+
 
 /****************************************************************************************************
   The following commands have not been tested properly and/or are definitely dangerous to use
@@ -491,17 +498,17 @@ registerCheats({
     { name: "sigilspeed", message: "fast sigil research." },
     {
       name: "mainframe",
-      message: "mainframe cheats",
+      message: "mainframe cheats check config file",
       configurable: { isObject: true },
     },
     {
       name: "chipbonuses",
-      message: "chip bonuses",
+      message: "chip bonuses check config file",
       configurable: { isObject: true },
     },
     {
       name: "meals",
-      message: "meal bonus cheats",
+      message: "meal bonus cheats check config file",
       configurable: { isObject: true },
     },
   ],
@@ -514,50 +521,32 @@ registerCheats({
   subcheats: [
     {
       name: "sailing",
-      message: "sailing cheats",
+      message: "sailing cheats check config file",
       configurable: { isObject: true },
     },
     {
       name: "gaming",
-      message: "gaming cheats",
+      message: "gaming cheats check config file",
       configurable: { isObject: true },
     },
     {
       name: "divinity",
-      message: "divinity cheats",
+      message: "divinity cheats check config file",
       configurable: { isObject: true },
     },
     {
       name: "collider",
-      message: "collider cheats",
+      message: "collider cheats check config file",
       configurable: { isObject: true },
     },
     {
       name: "holes",
-      message: "holes cheats",
+      message: "holes cheats check config file",
       configurable: { isObject: true },
     },
   ],
 });
 
-
-// monument
-registerCheats({
-  name: "monument",
-  message: "Monument cheats",
-  canToggleSubcheats: true,
-  subcheats: [
-    {
-      name: "wisdom", message: "wisdom monument minigame cheat",
-      fn: function (params) {
-        setupMonumentProxy.call(this);
-        cheatState.monument[params[0]] = !cheatState.monument[params[0]];
-        return `${cheatState.monument[params[0]] ? "Activated" : "Deactivated"} ${params[0]
-          } monument cheat.`;
-      }
-    },
-  ],
-});
 
 // added by dreamx3 - 2
 // all w6 related proxy cheats
@@ -568,22 +557,22 @@ registerCheats({
   subcheats: [
     {
       name: "farming",
-      message: "farming cheats",
+      message: "farming cheats check config file",
       configurable: { isObject: true },
     },
     {
       name: "ninja",
-      message: "ninja cheats",
+      message: "ninja cheats check config file",
       configurable: { isObject: true },
     },
     {
       name: "summoning",
-      message: "summoning cheats",
+      message: "summoning cheats check config file",
       configurable: { isObject: true },
     },
     {
       name: "grimoire",
-      message: "grimoire cheats",
+      message: "grimoire cheats check config file",
       configurable: { isObject: true },
     },
   ],
@@ -2242,7 +2231,7 @@ function setupBetterCogsProxy() {
       try {
         if (cheatState.w3.bettercog && -1 != context._TRIGGEREDtext.indexOf("k")) {
           cheatState["rng"] = "high";
-          // cheatState["rngInt"] = ["high", "high", "low", "high"];
+          // cheatState["rngInt"] = ["high", "high", "low", "high"]; // does not work like i thought
           let rtn = Reflect.apply(originalFn, context, argumentsList);
           cheatState["rng"] = false;
           // cheatState["rngInt"] = false;
@@ -3269,28 +3258,6 @@ function setupw5Proxies() {
 
 }
 
-// monument
-function setupMonumentProxy() {
-
-  // Wisdom monument infinite attempts
-  const wisdomAttempt = bEngine
-    .getGameAttribute("PixelHelperActor")[25]
-    .getValue("ActorEvents_670", "_GenINFO");
-
-  const handlerWisdom = {
-    get: function (originalObject, property) {
-      if (cheatState.monument.wisdom) {
-        if (Number(property) === 194) return 10;
-      }
-      return Reflect.get(...arguments);
-    },
-  };
-
-  const proxyWisdom = new Proxy(wisdomAttempt, handlerWisdom);
-  bEngine
-    .getGameAttribute("PixelHelperActor")[25]
-    .setValue("ActorEvents_670", "_GenINFO", proxyWisdom);
-}
 
 // added by dreamx3 - 1
 function setupw6Proxies() {
@@ -3475,6 +3442,29 @@ function setupHoopsMinigameProxy() {
   } catch (error) {
     console.error("Error setting up Hoops minigame proxy:", error);
   }
+}
+
+// monument
+function setupMonumentProxy() {
+
+  // Wisdom monument infinite attempts
+  const wisdomAttempt = bEngine
+    .getGameAttribute("PixelHelperActor")[25]
+    .getValue("ActorEvents_670", "_GenINFO");
+
+  const handlerWisdom = {
+    get: function (originalObject, property) {
+      if (cheatState.monument.wisdom) {
+        if (Number(property) === 194) return 10;
+      }
+      return Reflect.get(...arguments);
+    },
+  };
+
+  const proxyWisdom = new Proxy(wisdomAttempt, handlerWisdom);
+  bEngine
+    .getGameAttribute("PixelHelperActor")[25]
+    .setValue("ActorEvents_670", "_GenINFO", proxyWisdom);
 }
 
 function rollPersonalObols() {
