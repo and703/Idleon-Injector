@@ -2051,9 +2051,25 @@ function setupBehaviorScriptProxies() {
 
   behavior.randomInt = new Proxy(behavior.randomInt, {
     apply: function (originalFn, context, argumentsList) {
-      if (cheatState["rngInt"] === "high") return argumentsList[1];
-      if (cheatState["rngInt"] === "low") return argumentsList[0];
-      if (cheatState["rngInt"]) return cheatState["rng"];
+      // sorry for this its super ugly but the only thing i can mangage the better cogs :/
+      // now able to give an array with multiple values that gets executed.
+      // Not used for the cogs atm still i dont know how it works.
+      if (Array.isArray(cheatState["rngInt"]) && cheatState["rngInt"].length > 0) {
+
+        const value = cheatState["rngInt"][0];
+        cheatState["rngInt"].shift();
+        if (cheatState["rngInt"].length <= 0) cheatState["rngInt"] = value;
+
+        if (value === "high") return argumentsList[1];
+        if (value === "low") return argumentsList[0];
+        return value; // If it's a numeric value
+      } else if (cheatState["rngInt"] === "high") {
+        return argumentsList[1];
+      } else if (cheatState["rngInt"] === "low") {
+        return argumentsList[0];
+      } else if (cheatState["rngInt"]) {
+        return cheatState["rngInt"];
+      }
       return Reflect.apply(originalFn, context, argumentsList);
     },
   });
@@ -2062,7 +2078,7 @@ function setupBehaviorScriptProxies() {
     apply: function (originalFn, context, argumentsList) {
       if (cheatState["rngF"] === "high") return 1.0;
       if (cheatState["rngF"] === "low") return 0.0;
-      if (cheatState["rngF"]) return cheatState["rng"];
+      if (cheatState["rngF"]) return cheatState["rngF"];
       return Reflect.apply(originalFn, context, argumentsList);
     },
   });
@@ -2224,8 +2240,13 @@ function setupBetterCogsProxy() {
   events(481).prototype._customEvent_WorkbenchStuff2 = new Proxy(events(481).prototype._customEvent_WorkbenchStuff2, {
     apply: function (originalFn, context, argumentsList) {
       try {
-        if (-1 != context._TRIGGEREDtext.indexOf("k")) {
-          console.log("Better Cogs Proxy triggered with k in text");
+        if (cheatState.w3.bettercog && -1 != context._TRIGGEREDtext.indexOf("k")) {
+          cheatState["rng"] = "high";
+          // cheatState["rngInt"] = ["high", "high", "low", "high"];
+          let rtn = Reflect.apply(originalFn, context, argumentsList);
+          cheatState["rng"] = false;
+          // cheatState["rngInt"] = false;
+          return rtn;
         }
       } catch (e) {
         console.error("Error in Better Cogs Proxy:", e);
@@ -3717,6 +3738,9 @@ async function getChoicesNeedingConfirmation() {
     "multiply",
     "summoning",
     "ninjaItem",
+    "lvl",
+    "qnty",
+    "setalch",
     // "keychain", why is this here?
   ];
 }
