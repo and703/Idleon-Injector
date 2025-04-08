@@ -130,6 +130,21 @@ function registerCheats(cheatMap, higherKeys = []) {
   }
 }
 
+// Function called by the backend API to update the config in the game context
+function updateCheatConfig(newConfig) {
+  // Simple merge: Iterate over newConfig and update cheatConfig
+  // For nested objects, this will replace the entire nested object.
+  // If deep merging is needed, a more complex recursive merge function would be required.
+  for (const key in newConfig) {
+    if (Object.hasOwnProperty.call(newConfig, key)) {
+      // Check if the property exists in the original cheatConfig to avoid adding new top-level keys unintentionally
+      // Although, allowing new keys might be desired depending on how configs evolve.
+      // Let's allow adding new keys for flexibility for now.
+      cheatConfig[key] = newConfig[key];
+    }
+  }
+}
+
 /****************************************************************************************************
   Registering available cheats:
   Start things off with the relatively safe cheats.

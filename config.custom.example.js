@@ -125,5 +125,4 @@ exports.cheatConfig = {
 	Finally some injector config. The only thing you might need to change here is chromePath, which should be the path to your chrome.exe file.
 */
 exports.injectorConfig = {
-	chromePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
 };

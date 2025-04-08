@@ -9,23 +9,78 @@
 <body>
     <h1>Idleon Cheat Injector</h1>
 
-    <div id="devtools-container">
-        <h2>Embedded DevTools</h2>
-        <button id="toggle-devtools-button">Show/Hide DevTools</button>
-        <iframe id="devtools-iframe" style="width: 100%; height: 600px; border: 1px solid #ccc; display: none;"></iframe>
-        <p id="devtools-message" style="display: none;"></p>
+    <!-- Tab Buttons -->
+    <div class="tab-container">
+        <button class="tab-button active" data-tab="cheats-tab">Cheats</button>
+        <button class="tab-button" data-tab="config-tab">Config</button>
+        <button class="tab-button" data-tab="devtools-tab">DevTools</button>
     </div>
 
-    <div id="cheat-list">
-        <h2>Available Cheats</h2> <!-- Added heading for clarity -->
-        <div id="filter-container"> <!-- Moved filter here -->
-             <input type="text" id="filter-input" placeholder="Filter cheats...">
+    <!-- Tab Content -->
+    <div id="tab-content">
+        <!-- Cheats Tab -->
+        <div id="cheats-tab" class="tab-pane active">
+            <h2>Available Cheats</h2>
+            <div id="filter-container">
+                 <input type="text" id="filter-input" placeholder="Filter cheats...">
+            </div>
+            <div id="cheat-buttons">
+                 <!-- Cheat buttons will be loaded here -->
+            </div>
+            <p id="loading-cheats">Loading cheats...</p>
         </div>
-        <div id="cheat-buttons"> <!-- Added container for buttons -->
-             <!-- Buttons will be loaded here -->
+
+        <!-- Config Tab -->
+        <div id="config-tab" class="tab-pane">
+            <h2>Configuration</h2>
+
+            <!-- Config Sub-Tabs -->
+            <div class="config-sub-tab-container">
+                <button class="config-sub-tab-button active" data-sub-tab="cheatconfig-pane">Cheat Config</button>
+                <button class="config-sub-tab-button" data-sub-tab="startupcheats-pane">Startup Cheats</button>
+            </div>
+
+            <!-- Config Sub-Tab Content -->
+            <div id="config-sub-tab-content">
+                <div id="cheatconfig-pane" class="config-sub-tab-pane active">
+                    <h3>Cheat Configuration</h3>
+                    <div class="config-category-selector">
+                        <label for="cheatconfig-category-select">Select Category:</label>
+                        <select id="cheatconfig-category-select">
+                            <option value="all">All</option>
+                            <!-- Categories will be loaded here -->
+                        </select>
+                    </div>
+                    <div id="cheatconfig-options">
+                        <!-- CheatConfig options will be loaded here -->
+                    </div>
+                    <p id="loading-cheatconfig" style="display: none;">Loading CheatConfig...</p>
+                </div>
+                <div id="startupcheats-pane" class="config-sub-tab-pane">
+                    <h3>Startup Cheats</h3>
+                    <div id="startupcheats-options">
+                        <!-- StartupCheats options will be loaded here -->
+                    </div>
+                    <p id="loading-startupcheats" style="display: none;">Loading Startup Cheats...</p>
+                </div>
+            </div>
+            <p id="loading-config" style="display: none;">Loading configuration...</p> <!-- Keep general loading indicator? Maybe remove later -->
+
+            <div class="config-actions">
+                <button id="update-config-button">Use Config</button>
+                <button id="save-config-button">Save Config</button>
+            </div>
         </div>
-        <p id="loading-cheats">Loading cheats...</p> <!-- Added ID for easier hiding -->
+
+        <!-- DevTools Tab -->
+        <div id="devtools-tab" class="tab-pane">
+             <h2>Embedded DevTools</h2>
+             <!-- Removed toggle button, DevTools are now always visible within this tab -->
+             <iframe id="devtools-iframe" style="width: 100%; height: 600px; border: 1px solid #ccc;"></iframe>
+             <p id="devtools-message">Loading DevTools URL...</p>
+        </div>
     </div>
+
     <div id="status-message"></div>
 
     <script src="script.js"></script>

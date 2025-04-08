@@ -1,4 +1,3 @@
-
 const spawn = require('child_process').spawn;
 const _ = require('lodash');
 const CDP = require('chrome-remote-interface');
@@ -434,6 +433,217 @@ async function setupIntercept(hook) {
           });
           // --- End DevTools URL Endpoint ---
 
+          // --- API Endpoint for Cheat Configuration ---
+
+          // Helper function to prepare config for JSON serialization, converting functions to strings
+          const prepareConfigForJson = (obj) => {
+            const result = {};
+            for (const key in obj) {
+              if (Object.hasOwnProperty.call(obj, key)) {
+                const value = obj[key];
+                if (typeof value === 'function') {
+                  result[key] = value.toString(); // Convert function to string
+                } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                  result[key] = prepareConfigForJson(value); // Recurse for nested objects
+                } else {
+                  // Keep other JSON-serializable types as is (string, number, boolean, array, null)
+                  result[key] = value;
+                }
+              }
+            }
+            return result;
+          };
+
+          // Helper function to parse config from JSON, converting function strings back to functions
+          const parseConfigFromJson = (obj) => {
+            const result = {};
+            for (const key in obj) {
+              if (Object.hasOwnProperty.call(obj, key)) {
+                let value = obj[key];
+                if (typeof value === 'string') {
+                  const trimmedValue = value.trim();
+                  // Check if it looks like a function string
+                  // Pattern 1: Standard function keyword
+                  if (trimmedValue.startsWith('function')) {
+                    try {
+                      // Standard functions might be declarations (function name(){}) or expressions (function(){})
+                      // Wrapping in parentheses handles both cases for evaluation
+                      value = new Function(`return (${trimmedValue})`)();
+                    } catch (e) {
+                      console.warn(`[Config Parse] Failed to convert standard function string for key '${key}': ${e}. Keeping as string.`);
+                    }
+                  }
+                  // Pattern 2: Arrow function with name prefix (the problematic case)
+                  // Example: SnailStuff (t, args) => { ... }
+                  else if (/^\w+\s*\(.*\)\s*=>/.test(trimmedValue)) {
+                    try {
+                      // Extract the part from the first '(' onwards
+                      const arrowFuncBody = trimmedValue.substring(trimmedValue.indexOf('('));
+                      // Evaluate the extracted anonymous arrow function expression
+                      value = new Function(`return (${arrowFuncBody})`)();
+                    } catch (e) {
+                      console.warn(`[Config Parse] Failed to convert named arrow function string for key '${key}': ${e}. Keeping as string.`);
+                    }
+                  }
+                  // Pattern 3: Arrow function starting with ( or single param without ()
+                  // Example: (t, args) => { ... }  OR  t => ...
+                  else if (/^\(.*\)\s*=>/.test(trimmedValue) || /^\w+\s*=>/.test(trimmedValue)) {
+                    try {
+                      // These are already valid expressions, wrap in parentheses for safety
+                      value = new Function(`return (${trimmedValue})`)();
+                    } catch (e) {
+                      console.warn(`[Config Parse] Failed to convert standard arrow function string for key '${key}': ${e}. Keeping as string.`);
+                    }
+                  }
+                  // If none of the patterns match, it's likely just a regular string
+                } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                  value = parseConfigFromJson(value); // Recurse for nested objects
+                }
+                result[key] = value;
+              }
+            }
+            return result;
+          };
+
+
+          app.get('/api/config', (req, res) => {
+            try {
+              const serializableCheatConfig = prepareConfigForJson(cheatConfig);
+              const fullConfigResponse = {
+                startupCheats: startupCheats, // Send the raw startupCheats array
+                cheatConfig: serializableCheatConfig // Send the processed cheatConfig
+              };
+              res.json(fullConfigResponse);
+            } catch (error) {
+              console.error("API Error preparing full config for JSON:", error);
+              res.status(500).json({ error: 'Internal server error while preparing configuration' });
+            }
+          });
+
+          app.post('/api/config/update', async (req, res) => {
+            const receivedFullConfig = req.body;
+            // console.log('[Web UI] Received full config for update:', receivedFullConfig);
+
+            if (!receivedFullConfig || typeof receivedFullConfig !== 'object' || !receivedFullConfig.cheatConfig) {
+              return res.status(400).json({ error: 'Invalid configuration data received. Expected { startupCheats: [...], cheatConfig: {...} }.' });
+            }
+
+            try {
+              // 1. Extract and parse the cheatConfig part
+              const receivedCheatConfig = receivedFullConfig.cheatConfig;
+              const parsedCheatConfig = parseConfigFromJson(receivedCheatConfig);
+              // console.log('[Web UI] Parsed cheatConfig (with functions):', parsedCheatConfig);
+
+              // 2. Update the server-side cheatConfig object (merge)
+              _.merge(cheatConfig, parsedCheatConfig);
+              // console.log('[Web UI] Updated server-side cheatConfig:', cheatConfig);
+
+              // 3. Update server-side startupCheats (replace)
+              if (Array.isArray(receivedFullConfig.startupCheats)) {
+                // Overwrite the existing array content while keeping the reference
+                startupCheats.length = 0; // Clear existing items
+                startupCheats.push(...receivedFullConfig.startupCheats); // Add new items
+                console.log('[Web UI] Updated server-side startupCheats.');
+              } else {
+                console.warn('[Web UI] Received startupCheats is not an array. Skipping update.');
+              }
+
+              // 4. Inject the updated *cheatConfig* into the game context
+              const contextExistsResult = await Runtime.evaluate({ expression: `!!(${context})` }); // Re-check context
+              if (!contextExistsResult || !contextExistsResult.result || !contextExistsResult.result.value) {
+                console.error("API Error: Cheat context not found in iframe. Cannot update config in game.");
+                return res.status(200).json({ message: 'Configuration updated on server, but failed to apply in game (context lost).' });
+              }
+
+              // Only inject cheatConfig changes
+              const configStringForInjection = objToString(parsedCheatConfig);
+
+              const updateExpression = `
+                if (typeof updateCheatConfig === 'function') {
+                  updateCheatConfig(${configStringForInjection});
+                  'Config updated in game.';
+                } else {
+                  'Error: updateCheatConfig function not found in game context.';
+                }
+              `;
+
+              const updateResult = await Runtime.evaluate({
+                expression: updateExpression,
+                awaitPromise: true,
+                allowUnsafeEvalBlockedByCSP: true
+              });
+
+              let gameUpdateDetails = 'N/A';
+              if (updateResult.exceptionDetails) {
+                console.error(`API Error updating config in game:`, updateResult.exceptionDetails.text);
+                gameUpdateDetails = `Failed to apply in game: ${updateResult.exceptionDetails.text}`;
+                return res.status(200).json({ message: 'Configuration updated on server, but failed to apply in game.', details: gameUpdateDetails });
+              } else {
+                gameUpdateDetails = updateResult.result.value;
+                console.log(`[Web UI] In-game config update result: ${gameUpdateDetails}`);
+                if (gameUpdateDetails.startsWith('Error:')) {
+                  return res.status(200).json({ message: 'Configuration updated on server, but failed to apply in game.', details: gameUpdateDetails });
+                }
+              }
+
+              res.json({ message: 'Configuration updated successfully.', details: gameUpdateDetails });
+
+            } catch (apiError) {
+              console.error("API Error in /api/config/update:", apiError);
+              res.status(500).json({ error: 'Internal server error while updating configuration', details: apiError.message });
+            }
+          });
+          // --- End Cheat Configuration Endpoint ---
+
+          // --- API Endpoint for Saving Configuration to File ---
+          app.post('/api/config/save', async (req, res) => {
+            const receivedFullConfig = req.body;
+
+            if (!receivedFullConfig || typeof receivedFullConfig !== 'object' || !receivedFullConfig.cheatConfig || !Array.isArray(receivedFullConfig.startupCheats)) {
+              return res.status(400).json({ error: 'Invalid configuration data received for saving. Expected { startupCheats: [...], cheatConfig: {...} }.' });
+            }
+
+            try {
+              // 1. Extract parts from UI payload
+              const uiCheatConfigRaw = receivedFullConfig.cheatConfig;
+              const uiStartupCheats = receivedFullConfig.startupCheats;
+              const new_injectorConfig = objToString(injectorConfig).replaceAll("\\", "\\\\");
+
+              // 2. Parse UI cheatConfig to handle functions for saving
+              const parsedUiCheatConfig = parseConfigFromJson(uiCheatConfigRaw);
+
+              // 3. Construct file content string
+              const fileContentString = `
+/****************************************************************************************************
+ * This file is generated by the Idleon Cheat Injector UI.
+ * Manual edits might be overwritten when saving from the UI.
+ ****************************************************************************************************/
+
+exports.startupCheats = ${JSON.stringify(uiStartupCheats, null, '\t')}; // Use startupCheats from UI
+
+exports.cheatConfig = ${objToString(parsedUiCheatConfig)}; // Use parsed cheatConfig from UI
+
+exports.injectorConfig = ${new_injectorConfig}; // Use current injectorConfig
+`;
+              // 4. Define save path
+              const savePath = path.join(process.cwd(), 'config.custom.js');
+
+              // 5. Write to file
+              await fs.writeFile(savePath, fileContentString.trim());
+              console.log(`[Web UI] Configuration saved to ${savePath}`);
+
+              // 6. Update in-memory variables AFTER successful save
+              startupCheats.length = 0; // Clear existing
+              startupCheats.push(...uiStartupCheats); // Add new
+              _.merge(cheatConfig, parsedUiCheatConfig); // Merge cheatConfig updates
+
+              res.json({ message: 'Configuration successfully saved to config.custom.js' });
+
+            } catch (apiError) {
+              console.error("API Error in /api/config/save:", apiError);
+              res.status(500).json({ error: 'Internal server error while saving configuration file', details: apiError.message });
+            }
+          });
 
           // --- Start Web Server ---
           app.listen(web_port, () => {
