@@ -99,7 +99,7 @@ exports.cheatConfig = {
 			JadeUpgCost: t => t, // Jade upgrades cost 5x cheaper (lower is better), t => 0 for free upgrades
 			ItemStat: t => t * 2, // 2x Item stats
 			ItemFindOdds: t => t * 2, // 2x Item find rate
-			PristineBon: t => t * 1.2, // 1.2x Pristine Bon stats (WARNING don't over multiply in case of shadow ban due to too high drop rate)	
+			PristineBon: t => t, // 1.2x Pristine Bon stats (WARNING don't over multiply in case of shadow ban due to too high drop rate)	
 		},
 		summoning: {
 			ManaStart: t => t, // starting mana (can be t * 2 for 2x current start or t => 10)
@@ -111,7 +111,7 @@ exports.cheatConfig = {
 			SummUpgBonus: t => t * 2, // 2x value of all summoning upgrade bonuses
 			SummRockEssGen: t => t * 1.5, // 1.5x essence gain for all colours
 			UpgCost: t => t / 2, // t => 0 for free upgrades
-			UnitCost: t => Math.ceil(t/2), // halved unit cost (lower is better)
+			UnitCost: t => Math.ceil(t / 2), // halved unit cost (lower is better)
 			RerollCost: t => 0, // summon unit cost always 0
 			SummEXPgain: t => t, // increase summoning exp gain
 			EnemyHP: t => t / 2, // halved enemy hp

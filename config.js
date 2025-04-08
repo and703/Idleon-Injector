@@ -183,7 +183,7 @@ exports.cheatConfig = {
       SovereignChances: (t) => t, // sovereign chance (is lower is better?)
       NewCaptBoatSlot: (t) => 0, // free boat and captain slots
       BuyCaptainCost: (t) => 0, // free captains
-      ArtifactBonus: (t) => 3, // bonus from the artifact, needs investigation as to what can be done here!
+      ArtifactBonus: (t) => t, // bonus from the artifact, needs investigation as to what can be done here!
     },
     gaming: {
       FertilizerUpgCosts: (t) => 0, // fertilizer upgrade costs are free
@@ -268,12 +268,12 @@ exports.cheatConfig = {
       GrowthReq: (t) => t / 5, // time for plants to grow (base is 4 hours * 1.5 ^ seedtype (0 for basic, etc))
       OGunlocked: (t) => t, //if overgrowth unlocked in shop (0 -> locked, 1 -> unlocked)
       NextOGchance: (t) => t * 5, // chance to get next OG multi (5x chance)
-      OGmulti: (t) => (t == 1 ? 1 : Math.max(1, t * 16)), // OG bonus multiplier (1 -> no multiplier, 2 -> 2x, 4 -> 4x, etc) minimum is 1x to prevent bricking
+      OGmulti: (t) => (t == 1 ? 1 : Math.max(1, t * 2)), // OG bonus multiplier (1 -> no multiplier, 2 -> 2x, 4 -> 4x, etc) minimum is 1x to prevent bricking
       PlotOwned: (t) => Math.min(36, t + 2), // number of plots owned, additional two plots to your farm, max is 36
       MarketCostType: (t) => t, // plant type for upgrade
       MarketCostQTY: (t) => Math.floor(t / 5), // plant amount for upgrade, t => 0 for free upgrades
       NextCropChance: (t) => t * 2, // chance to get next plant evo level (2x chance)
-      CropsBonusValue: (t) => t, // how much each crop is worth (2x)
+      CropsBonusValue: (t) => t * 2, // how much each crop is worth (2x)
       CropsOnVine: (t) => t * 2, // 2 x Num of crops on each plant
       GrowthRate: (t) => t, // Growth rate multiplier (growth increase/sec)
     },
@@ -287,7 +287,7 @@ exports.cheatConfig = {
       JadeUpgCost: (t) => t, // Jade upgrades cost 5x cheaper (lower is better), t => 0 for free upgrades
       ItemStat: (t) => t * 2, // 2x Item stats
       ItemFindOdds: (t) => t * 2, // 2x Item find rate
-      PristineBon: (t) => t * 1.2, // 2x Pristine Bon stats
+      PristineBon: (t) => t, // 2x Pristine Bon stats
     },
     summoning: {
       ManaStart: (t) => t, // starting mana (can be t * 2 for 2x current start or t => 10)
