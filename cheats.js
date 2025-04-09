@@ -2366,7 +2366,7 @@ function setupItemMoveProxy() {
                 return target[name];
               },
             });
-            bEngine.gameAttributes.h["Lv0"] = levels;
+            // bEngine.gameAttributes.h["Lv0"] = levels; why is that here? Caused the bug no be able to use it. Since it reverts the proxy?
             return Reflect.apply(argumentsList[0], context, []);
           }
         } catch (e) { }

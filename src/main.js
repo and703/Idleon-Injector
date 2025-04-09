@@ -50,7 +50,6 @@ console.log('InjectCheatUI v1.0');
 console.log('------------------------------------------------------------------------------------------');
 console.log('');
 
-const cdp_port = 32123;
 const config = require(process.cwd() + '/config.js');
 try {
   const customConfig = require(process.cwd() + '/config.custom.js');
@@ -65,6 +64,7 @@ try {
 const injectorConfig = config.injectorConfig;
 const startupCheats = config.startupCheats;
 const cheatConfig = config.cheatConfig;
+const cdp_port = 32123;
 
 // --- Web Server Setup ---
 const app = express();
@@ -243,7 +243,7 @@ async function setupIntercept(hook) {
     // Wait for the page's load event to ensure the DOM, including the iframe, is ready.
     Page.loadEventFired(async () => {
       console.log(">>> Page.loadEventFired callback started."); // Added for diagnostics
-      // Wrap event handler logic in try-catch.
+
       try {
         console.log("Page load event fired.");
         // Define the JavaScript context within the game's iframe where the cheats operate.
