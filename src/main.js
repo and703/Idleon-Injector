@@ -46,7 +46,7 @@ console.log("valleymon");
 console.log("Disputate");
 console.log("and everyone that contributed to this project");
 console.log('------------------------------------------------------------------------------------------');
-console.log('InjectCheatUI v1.0');
+console.log('InjectCheatUI v1.1');
 console.log('------------------------------------------------------------------------------------------');
 console.log('');
 
@@ -101,6 +101,11 @@ function attach(name) {
       if (match) {
         resolve(match[1]);
       }
+    });
+
+    // Add error handler for spawn issues (like ENOENT)
+    idleon.on('error', (err) => {
+      reject(err); // Reject the promise to propagate the error
     });
   });
 }
@@ -667,6 +672,29 @@ exports.injectorConfig = ${new_injectorConfig}; // Use current injectorConfig
     console.log("Page load event listener attached.");
 
   } catch (error) {
-    console.error("An error occurred in the main execution block:", error);
+    console.error("An error occurred:", error); // Simplified initial log
+
+    // Check for specific error types/messages
+    if (error.code === 'ENOENT' && error.syscall === 'spawn LegendsOfIdleon.exe') {
+      console.log(`\n>>> NOOB DETECTED!`);
+      console.log(`\n>>> Specific Error Detected: Could not find 'LegendsOfIdleon.exe'.`);
+      console.log(`>>> Please ensure the injector is in the same directory as the game!`);
+    } else if (error && error.message && error.message.includes('No inspectable targets')) {
+      console.log("\n>>> Specific Error Detected: Is Steam running?!");
+    } else {
+      // Generic error message if not specifically handled above
+      console.log("\n>>> An unexpected error occurred.");
+    }
+
+    // Keep the console open on error
+    console.log("\nPress Enter to exit...");
+    const readline = require('readline').createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    readline.question('', () => {
+      readline.close();
+      process.exit(1); // Exit with error code
+    });
   }
 })();
