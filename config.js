@@ -48,12 +48,8 @@ exports.cheatConfig = {
     318: (t) => 10000, // 10x hp/drop plunderous mobs
     120: (t) => 800, // 800% shockwave damage
     483: (t) => Math.max(t, 3.5), // Tenteycle
-    45: (t, args) => {
-      return {
-        1: (t) => t, // time?
-        2: (t) => t, // points?
-      }[args[0]](t);
-    },
+    // 1: time? 2: points?
+    45: (t, args) => { const fns = { 1: (t) => t, 2: (t) => t }; const fn = fns[args[0]]; return fn ? fn(t) : 0; },
   },
   w1: {
     anvil: {
@@ -198,13 +194,8 @@ exports.cheatConfig = {
       ImportItemCOST: (t) => 0, // import item upgrades are free
       AcornShopCost: (t) => 0, //acorn shop upgrades are free
       BoxCost: (t) => 0, //new boxes are free
-      SnailStuff: (t, args) => {
-        return {
-          0: (t) => 1, // upgrade chance
-          1: (t) => 0, // reset chance
-          2: (t) => t, // bit multiplier
-        }[args[1]](t);
-      },
+      // 0: upgrade chance 1: reset chance 2: bit multiplier
+      SnailStuff: (t, args) => { const fns = { 0: (t) => 1, 1: (t) => 0, 2: (t) => t }; return fns[args[1]] ? fns[args[1]](t) : 0; },
       SnailMail: false,
     },
     divinity: {
