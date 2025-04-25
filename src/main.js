@@ -46,7 +46,7 @@ console.log("valleymon");
 console.log("Disputate");
 console.log("and everyone that contributed to this project");
 console.log('------------------------------------------------------------------------------------------');
-console.log('InjectCheatUI v1.1');
+console.log('InjectCheatUI v1.1.1');
 console.log('------------------------------------------------------------------------------------------');
 console.log('');
 

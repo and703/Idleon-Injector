@@ -295,6 +295,7 @@ registerCheats({
         ["Blazing Star Anniversary Pack", "bon_c"],
         ["Midnight Tide Anniversary Pack", "bon_d"],
         ["Lush Emerald Anniversary Pack", "bon_e"],
+        ["Windwalker Pack", "bun_w"],
       ].map(([name, code]) => createBundleCheat(name, code));
     })(),
   ],
@@ -588,6 +589,11 @@ registerCheats({
     {
       name: "grimoire",
       message: "grimoire cheats check config file",
+      configurable: { isObject: true },
+    },
+    {
+      name: "windwalker",
+      message: "windwalker cheats check config file",
       configurable: { isObject: true },
     },
   ],
@@ -3275,6 +3281,17 @@ function setupw5Proxies() {
 
 
 // added by dreamx3 - 1
+function setupMiscProxies() {
+  const actorEvents345 = events(345);
+
+  const keychain = actorEvents345._customBlock_keychainn;
+  actorEvents345._customBlock_keychainn = function (...argumentList) {
+    return cheatConfig.misc.hasOwnProperty("keychain")
+      ? cheatConfig.misc["keychain"](Reflect.apply(keychain, this, argumentList))
+      : Reflect.apply(keychain, this, argumentList);
+  };
+}
+
 function setupw6Proxies() {
   const actorEvents579 = events(579);
 
@@ -3298,6 +3315,7 @@ function setupw6Proxies() {
       ? cheatConfig.w6.summoning[argumentList[0]](Reflect.apply(Summoning, this, argumentList))
       : Reflect.apply(Summoning, this, argumentList);
   };
+  // end - 1
 
   // we use the same summoning event since grimoire is located there.
   const Grimoire = actorEvents579._customBlock_Summoning;
@@ -3306,19 +3324,15 @@ function setupw6Proxies() {
       ? cheatConfig.w6.grimoire[argumentList[0]](Reflect.apply(Grimoire, this, argumentList))
       : Reflect.apply(Grimoire, this, argumentList);
   };
-}
 
-function setupMiscProxies() {
-  const actorEvents345 = events(345);
-
-  const keychain = actorEvents345._customBlock_keychainn;
-  actorEvents345._customBlock_keychainn = function (...argumentList) {
-    return cheatConfig.misc.hasOwnProperty("keychain")
-      ? cheatConfig.misc["keychain"](Reflect.apply(keychain, this, argumentList))
-      : Reflect.apply(keychain, this, argumentList);
+  const Windwalker = actorEvents579._customBlock_Windwalker;
+  actorEvents579._customBlock_Windwalker = function (...argumentList) {
+    return cheatState.w6.windwalker && cheatConfig.w6.windwalker.hasOwnProperty(argumentList[0])
+      ? cheatConfig.w6.windwalker[argumentList[0]](Reflect.apply(Windwalker, this, argumentList))
+      : Reflect.apply(Windwalker, this, argumentList);
   };
 }
-// end - 1
+
 
 // Minigame cheats
 function setupMinigameProxy() {

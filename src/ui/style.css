@@ -522,3 +522,27 @@ h1 {
     border-color: #007bff; /* Blue border on focus */
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* Subtle glow on focus */
 }
+
+/* Sticky Config Actions */
+#config-tab.active .config-actions {
+    position: sticky;
+    bottom: 20px; /* Adjust as needed */
+    right: 20px;  /* Adjust as needed */
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white background */
+    padding: 10px; /* Add some padding */
+    border-radius: 5px; /* Optional: rounded corners */
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Optional: subtle shadow */
+    z-index: 10; /* Ensure it stays on top */
+    /* Keep existing text-align: right */
+    /* Ensure buttons are aligned right within the sticky container */
+    margin-right: 20px; /* Add margin to align with the right edge of the tab content padding */
+    float: right; /* Make the container only as wide as its content and stick right */
+    width: fit-content; /* Adjust width to content */
+}
+
+/* Clearfix for the parent container if float is used */
+#config-tab.active::after {
+    content: "";
+    display: table;
+    clear: both;
+}
