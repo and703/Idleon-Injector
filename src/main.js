@@ -7,6 +7,8 @@ const btoa = require('btoa');
 const Enquirer = require('enquirer');
 const express = require('express'); // Added for web UI
 const path = require('path'); // Added for static file serving
+const os = require('os');
+const http = require('http'); // Added for Linux since CDP is buggy on it for some reason.
 
 // Converts a JavaScript object (potentially with functions) into a string representation
 // suitable for injection into the target environment. Functions are converted to their string form.
@@ -44,9 +46,10 @@ console.log("iBelg");
 console.log("Creater0822");
 console.log("valleymon");
 console.log("Disputate");
+console.log("Shinaii");
 console.log("and everyone that contributed to this project");
 console.log('------------------------------------------------------------------------------------------');
-console.log('InjectCheatUI v1.1.1');
+console.log('InjectCheatUI v1.1.2');
 console.log('------------------------------------------------------------------------------------------');
 console.log('');
 
@@ -65,6 +68,8 @@ const injectorConfig = config.injectorConfig;
 const startupCheats = config.startupCheats;
 const cheatConfig = config.cheatConfig;
 const cdp_port = 32123;
+const onLinux = os.platform() === 'linux';
+const linuxTimeout = config.injectorConfig.onLinuxTimeout;
 
 // --- Web Server Setup ---
 const app = express();
@@ -89,6 +94,7 @@ console.log('Options:');
 console.log(`Regex: ${injectorConfig.injreg}`);
 console.log(`Show idleon window console logs: ${injectorConfig.showConsoleLog}`);
 console.log(`Chrome location: ${injectorConfig.chrome}`);
+console.log(`Detected OS: ${os.platform()}`);
 console.log('');
 
 function attach(name) {
@@ -107,6 +113,42 @@ function attach(name) {
     idleon.on('error', (err) => {
       reject(err); // Reject the promise to propagate the error
     });
+  });
+}
+
+//TODO: (Shinaii) Full-Auto Linux Support is being tested already and will be in next commit
+
+function manualAttachLinux(timeout = 10000) {
+  const startTime = Date.now();
+  return new Promise((resolve, reject) => {
+    function check() {
+      const req = http.get(`http://localhost:${cdp_port}/json/version`, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data);
+            if (json.webSocketDebuggerUrl) {
+              return resolve(json.webSocketDebuggerUrl);
+            }
+            retry();
+          } catch (err) {
+            retry();
+          }
+        });
+      });
+
+      req.on('error', retry);
+    }
+
+    function retry() {
+      if (Date.now() - startTime > timeout) {
+        return reject(new Error('Timeout waiting for debugger WebSocket URL. Have you set --remote-debugging-port?'));
+      }
+      setTimeout(check, 500);
+    }
+
+    check();
   });
 }
 
@@ -236,7 +278,8 @@ async function setupIntercept(hook) {
 (async () => {
   // Wrap main logic in try-catch for overall error handling.
   try {
-    const hook = await attach('LegendsOfIdleon.exe');
+    //TODO: (Shinaii) Line 118 ^
+    const hook = await (onLinux ? manualAttachLinux(linuxTimeout) : attach('LegendsOfIdleon.exe'));
     console.log("Attached to game process.");
 
     const client = await setupIntercept(hook);
