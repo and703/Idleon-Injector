@@ -366,4 +366,5 @@ exports.injectorConfig = {
   showConsoleLog: false,
   chrome: "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
   enableUI: true,
+  onLinuxTimeout: 30000,
 };

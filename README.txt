@@ -14,6 +14,10 @@
    DO NOT run `LegendsOfIdleon.exe`. Instead, run the `IdleOnInjecterUI.exe`. This will launch the game with the cheat console enabled. A console window should appear alongside or shortly before the game window.
    Use this console to type commands.
 
+   FOR LINUX:
+   Currently Linux is manual. You need to run `InjectCheatsUI` in Terminal. After that you have to run the Game through Steam with those Launch-Parameters
+   `PROTON_LOG=1 PROTON_NO_ESYNC=1 WINEDBG=fixme %command% --remote-debugging-port=32123`
+
 4. Prerequisites & Troubleshooting:
    Make sure your Steam client is running.
    You will likely need NodeJS installed. If the console window appears and quickly disappears without launching the game, this is a common reason. Download the LTS version from https://nodejs.org/.
