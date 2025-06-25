@@ -35,6 +35,9 @@ exports.cheatConfig = {
     plunderous: {
       allcharacters: false,
     },
+    arcade: {
+      ArcadeCost: (t) => Math.min(t, 0),
+    }
   },
   wipe: {
     cogs: 0,
@@ -392,6 +395,9 @@ exports.cheatConfig = {
       // NBLB_bubbleLVrangeDisp: (t) => t,
       // ArcaneTachyonType: (t) => t,
     },
+    emperor: {
+      DailyEmperorTries: (t) => 0, // always have one try in emperor boss fight.
+    }
   },
   misc: {
     keychain: (t) => t,

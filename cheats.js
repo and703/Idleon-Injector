@@ -395,6 +395,12 @@ registerCheats({
       name: "autoparty",
       message: "Automatically add on screen players to your party",
     },
+    {
+      name: "arcade",
+      message:
+        "arcade cost nullify",
+      configurable: { isObject: true },
+    },
   ],
 });
 
@@ -599,6 +605,11 @@ registerCheats({
     {
       name: "arcane",
       message: "arcane cultist cheats check config file",
+      configurable: { isObject: true },
+    },
+    {
+      name: "emperor",
+      message: "unlimeted emperor tries",
       configurable: { isObject: true },
     },
   ],
@@ -1906,8 +1917,8 @@ async function setup() {
     await gameReady.call(this);
 
     // setup proxies
+    setupArcadeProxies.call(this);
     setupBetterCogsProxy.call(this);
-
     setupTimeCandyProxy.call(this);
     setupCurrenciesOwnedProxy.call(this);
     setupArbitraryProxy.call(this);
@@ -3343,6 +3354,25 @@ function setupw6Proxies() {
       ? cheatConfig.w6.arcane[argumentList[0]](Reflect.apply(Arcane, this, argumentList))
       : Reflect.apply(Arcane, this, argumentList);
   };
+
+  const Thingies = actorEvents579._customBlock_Thingies;
+  actorEvents579._customBlock_Thingies = function (...argumentList) {
+    return cheatState.w6.emperor && cheatConfig.w6.emperor.hasOwnProperty(argumentList[0])
+      ? cheatConfig.w6.emperor[argumentList[0]](Reflect.apply(Thingies, this, argumentList))
+      : Reflect.apply(Thingies, this, argumentList);
+  };
+}
+
+function setupArcadeProxies() {
+  const actorEvents345 = events(345)
+
+  const Thingies = actorEvents345._customBlock_DungeonCalc;
+  actorEvents345._customBlock_DungeonCalc = function (...argumentList) {
+    return cheatState.wide.arcade && cheatConfig.wide.arcade.hasOwnProperty(argumentList[0])
+      ? cheatConfig.wide.arcade[argumentList[0]](Reflect.apply(Thingies, this, argumentList))
+      : Reflect.apply(Thingies, this, argumentList);
+  };
+
 }
 
 
