@@ -596,6 +596,11 @@ registerCheats({
       message: "windwalker cheats check config file",
       configurable: { isObject: true },
     },
+    {
+      name: "arcane",
+      message: "arcane cultist cheats check config file",
+      configurable: { isObject: true },
+    },
   ],
 });
 
@@ -3330,6 +3335,13 @@ function setupw6Proxies() {
     return cheatState.w6.windwalker && cheatConfig.w6.windwalker.hasOwnProperty(argumentList[0])
       ? cheatConfig.w6.windwalker[argumentList[0]](Reflect.apply(Windwalker, this, argumentList))
       : Reflect.apply(Windwalker, this, argumentList);
+  };
+
+  const Arcane = actorEvents579._customBlock_ArcaneType;
+  actorEvents579._customBlock_ArcaneType = function (...argumentList) {
+    return cheatState.w6.arcane && cheatConfig.w6.arcane.hasOwnProperty(argumentList[0])
+      ? cheatConfig.w6.arcane[argumentList[0]](Reflect.apply(Arcane, this, argumentList))
+      : Reflect.apply(Arcane, this, argumentList);
   };
 }
 

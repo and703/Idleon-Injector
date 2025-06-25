@@ -323,7 +323,7 @@ exports.cheatConfig = {
       TempestStoneDropChance: (t) => Math.max(0.1, t),
       TempestMedallionDropChance: (t) => 1,
       PortalCostQTY: (t) => 1,
-      // Not tested and not interesting or maybe dangerous!
+      // Not tested and or not interesting or maybe dangerous!
       // PortalCostType: (t) => t,
       // CompassBonus: (t) => t,
       // StampDoubler: (t) => t,
@@ -353,6 +353,44 @@ exports.cheatConfig = {
       // InitializeTitanHP: (t) => t,
       // TitanKillReqTown: (t) => t,
       // CanWeEnterPortal: (t) => t,
+    },
+    arcane: {
+      ArcaneUpgCost: (t) => t / 2,
+      Arcane_HP: (t) => t * 2,
+      Arcane_DMG: (t) => t * 2,
+      Arcane_ACC: (t) => t * 2,
+      Arcane_DEF: (t) => t * 2,
+      Arcane_CRITPCT: (t) => t * 2,
+      Arcane_CRITDMG: (t) => t * 2,
+      Arcane_AttackSpdPCT: (t) => t * 2,
+      ArcaneMultishotPCT: (t) => t * 2,
+      TenteyeclePCT: (t) => Math.max(100, t), // this is the same as fully upgraded tent.
+      PrismaBubDropChance: (t) => t * 2,
+      WepDropChance: (t) => t * 2,
+      // WepDropQuality: (t) => t, // not sure about that needs testing
+      RingDropChance: (t) => t * 2,
+      // RingDropQuality: (t) => t, // not sure about that needs testing
+      DoubleItemDropz: (t) => Math.max(100, t), // always double statue drops
+      ExtraTachyon: (t) => t * 2,
+      ExtraTachyonMulti: (t) => t * 2,
+      ArcaneTachyonQTYbase: (t) => t * 2,
+      // Not tested and or not interesting or maybe dangerous!
+      // TesseractArcanist: (t) => t,
+      // ArcaneUpgUNLOCKED: (t) => t,
+      // ArcaneUpgTotal: (t) => t,
+      // ArcaneUpgBonus: (t) => t,
+      // ArcaneMapMulti: (t) => t,
+      // ArcaneMobSpawnQTY: (t) => t,
+      // CrystalChargeReq: (t) => t,
+      // ArcaneMapMulti_bon: (t) => t,
+      // ArcaneMapMulti_bonMAX: (t) => t,
+      // Arcane_MASTERY: (t) => t,
+      // TimeLeft: (t) => t,
+      // KillsReq: (t) => t,
+      // is_NBLB_on: (t) => t,
+      // NBLB_bubbleQTY: (t) => t,
+      // NBLB_bubbleLVrangeDisp: (t) => t,
+      // ArcaneTachyonType: (t) => t,
     },
   },
   misc: {
