@@ -289,13 +289,16 @@ registerCheats({
         ["Timeless Pack", "bun_t"],
         ["Ancient Echoes Pack", "bun_u"],
         ["Deathbringer Pack", "bun_v"],
+        ["Windwalker Pack", "bun_w"],
+        ["Arcande Cultist Pack", "bun_x"],
         ["Valenslime Day Pack", "bun_y"],
         ["Fallen Spirits Pet Pack", "bun_z"],
         ["Storage Ram Pack", "bon_a"],
         ["Blazing Star Anniversary Pack", "bon_c"],
         ["Midnight Tide Anniversary Pack", "bon_d"],
         ["Lush Emerald Anniversary Pack", "bon_e"],
-        ["Windwalker Pack", "bun_w"],
+        ["Eternal Hunter Pack", "bon_f"],
+        ["Gilded Treasure Pack", "bon_g"],
       ].map(([name, code]) => createBundleCheat(name, code));
     })(),
   ],
@@ -400,6 +403,10 @@ registerCheats({
       message:
         "arcade cost nullify",
       configurable: { isObject: true },
+    },
+    {
+      name: "eventspins",
+      message: "Infinite event spins",
     },
   ],
 });
@@ -2565,6 +2572,19 @@ function setupOptionsListAccountProxy() {
     },
     set: function (value) {
       this._185 = value;
+      return true;
+    },
+    enumerable: true,
+  });
+  // event spins
+  optionsListAccount._325 = optionsListAccount[325];
+  Object.defineProperty(optionsListAccount, 325, {
+    get: function () {
+      if (cheatState.wide.eventspins) this._325 = 10;
+      return this._325;
+    },
+    set: function (value) {
+      this._325 = value;
       return true;
     },
     enumerable: true,
