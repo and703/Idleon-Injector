@@ -27,7 +27,7 @@ jobs:
         working-directory: ./src
 
       - name: Upload EXE artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: InjectCheatsUI.exe
           path: ./src/InjectCheatsUI.exe
