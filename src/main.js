@@ -40,14 +40,7 @@ const objToString = (obj) => {
 
 
 // Tool initialization messages
-console.log('------------------------------------------------------------------------------------------');
-console.log("Credits:");
-console.log("iBelg");
-console.log("Creater0822");
-console.log("valleymon");
-console.log("Disputate");
-console.log("Shinaii");
-console.log("and everyone that contributed to this project");
+
 console.log('------------------------------------------------------------------------------------------');
 console.log('InjectCheatUI v1.1.2');
 console.log('------------------------------------------------------------------------------------------');
