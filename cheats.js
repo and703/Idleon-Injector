@@ -1933,7 +1933,6 @@ async function setup() {
     setupTimeCandyProxy.call(this);
     setupCurrenciesOwnedProxy.call(this);
     setupArbitraryProxy.call(this);
-    setupAnvilProxy.call(this);
     setupStampCostProxy.call(this);
     setupAFKRateProxy.call(this);
     setupAlchProxy.call(this);
@@ -2582,6 +2581,7 @@ function setupOptionsListAccountProxy() {
     },
     enumerable: true,
   });
+
   // event spins
   optionsListAccount._325 = optionsListAccount[325];
   Object.defineProperty(optionsListAccount, 325, {
@@ -2591,6 +2591,20 @@ function setupOptionsListAccountProxy() {
     },
     set: function (value) {
       this._325 = value;
+      return true;
+    },
+    enumerable: true,
+  });
+
+  // unlimited emperor runs 
+  optionsListAccount._370 = optionsListAccount[370];
+  Object.defineProperty(optionsListAccount, 370, {
+    get: function () {
+      if (cheatState.w6.emperor) this._370 = -10;
+      return this._370;
+    },
+    set: function (value) {
+      this._370 = value;
       return true;
     },
     enumerable: true,
@@ -2848,23 +2862,6 @@ function setupHPProxy() {
   });
 }
 
-// Nullify anvil upgrade cost and duration
-function setupAnvilProxy() {
-  const anvilProduceStats = events(189)._customBlock_AnvilProduceStats;
-  events(189)._customBlock_AnvilProduceStats = function (...argumentsList) {
-    if (cheatState.w1.anvil) {
-      const t = argumentsList[0];
-      if (t == "Costs1") return 0;
-      if (t == "Costs2") return 0;
-      if (t == "ProductionSpeed")
-        return cheatConfig.w1.anvil.productionspeed(
-          Reflect.apply(anvilProduceStats, this, argumentsList)
-        );
-    }
-    return Reflect.apply(anvilProduceStats, this, argumentsList);
-  };
-}
-
 // Nullify trapping cost
 function setupTrappingProxy() {
   const _1second = events(189)._customBlock_1second;
@@ -3052,7 +3049,9 @@ function setupAlchProxy() {
   });
 }
 // w1 cheats
+// TODO: move all setups stuff that is in w1 in here, so it is sorted.
 function setupw1StuffProxy() {
+  // owl cheats
   const actorEvents579 = events(579);
   const Owl = actorEvents579._customBlock_Summoning;
   actorEvents579._customBlock_Summoning = function (...argumentList) {
@@ -3060,9 +3059,27 @@ function setupw1StuffProxy() {
       ? cheatConfig.w1.owl[argumentList[0]](Reflect.apply(Owl, this, argumentList))
       : Reflect.apply(Owl, this, argumentList);
   };
+
+  // Nullify anvil upgrade cost and duration
+  const anvilProduceStats = events(189)._customBlock_AnvilProduceStats;
+  events(189)._customBlock_AnvilProduceStats = function (...argumentsList) {
+    if (cheatState.w1.anvil) {
+      const t = argumentsList[0];
+      if (t == "Costs1") return 0;
+      if (t == "Costs2") return 0;
+      if (t == "ProductionSpeed")
+        return cheatConfig.w1.anvil.productionspeed(
+          Reflect.apply(anvilProduceStats, this, argumentsList)
+        );
+    }
+    return Reflect.apply(anvilProduceStats, this, argumentsList);
+  };
+
+
 }
 
 // w2 cheats
+// TODO: move all setups stuff that is in w2 in here, so it is sorted.
 function setupw2StuffProxy() {
   const actorEvents579 = events(579);
   const Roo = actorEvents579._customBlock_Summoning;
@@ -3401,13 +3418,6 @@ function setupw6Proxies() {
     return cheatState.w6.arcane && cheatConfig.w6.arcane.hasOwnProperty(argumentList[0])
       ? cheatConfig.w6.arcane[argumentList[0]](Reflect.apply(Arcane, this, argumentList))
       : Reflect.apply(Arcane, this, argumentList);
-  };
-
-  const Thingies = actorEvents579._customBlock_Thingies;
-  actorEvents579._customBlock_Thingies = function (...argumentList) {
-    return cheatState.w6.emperor && cheatConfig.w6.emperor.hasOwnProperty(argumentList[0])
-      ? cheatConfig.w6.emperor[argumentList[0]](Reflect.apply(Thingies, this, argumentList))
-      : Reflect.apply(Thingies, this, argumentList);
   };
 }
 
