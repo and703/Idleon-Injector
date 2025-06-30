@@ -65,6 +65,34 @@ exports.cheatConfig = {
       ], // Set the companions you have unlocked (0=doot, down to 23=green mush)
       current: "11", //current companion - Glunko Supreme
     },
+    owl: {
+      OwlCost: (t) => t / 2,
+      OwlFeatherRate: (t) => t * 2,
+      OwlBonuses: (t) => t * 2,
+      OwlFeatherShinyGe: (t) => t, // not sure what this does
+      // OwlMegafeather: (t) => t,
+      // OwlNextUpgReq: (t) => t,
+    },
+  },
+  w2: {
+    roo: {
+      RooCost: (t) => t / 2,
+      RooShinyMulti: (t) => t * 2,
+      RooCatchRate: (t) => t * 2,
+      RooCatchREQ: (t) => t / 2,
+      RooCatchFishQTY: (t) => t * 2,
+      RooCatchRate_S: (t) => t * 2,
+      RooCatchREQ_S: (t) => t / 2,
+      RooCatchRate_T: (t) => t * 2,
+      RooCatchREQ_T: (t) => t / 2,
+      // RooNextUpgReq: (t) => t,
+      // RooShinyLuck: (t) => t, // not sure what this does
+      // RooTarOwned: (t) => t,
+      // RooCost_T: (t) => t,
+      // RooRESETbon: (t) => t,
+      // RooMegafeather: (t) => t,
+      // RooBonuse: (t) => t,
+    },
   },
   w4: {
     fastforaging: (t) => 3e8,

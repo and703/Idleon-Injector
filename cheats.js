@@ -455,6 +455,7 @@ registerCheats({
       message: "smithing cost nullification (change maps to have the effect apply).",
     },
     { name: "companion", message: "Enable companion", configurable: true },
+    { name: "owl", message: "Enable Owl cheats, check config file", configurable: true }
   ],
 });
 
@@ -463,7 +464,10 @@ registerCheats({
   name: "w2",
   message: "World 2 cheats",
   canToggleSubcheats: true,
-  subcheats: [{ name: "boss", message: "unlimited boss attempts" }],
+  subcheats: [
+    { name: "boss", message: "unlimited boss attempts" },
+    { name: "roo", message: "Enable Roo cheats, check config file", configurable: true },
+  ],
 });
 
 // All w3 related Proxy cheats
@@ -1933,6 +1937,8 @@ async function setup() {
     setupStampCostProxy.call(this);
     setupAFKRateProxy.call(this);
     setupAlchProxy.call(this);
+    setupw1StuffProxy.call(this);
+    setupw2StuffProxy.call(this);
     setupw3StuffProxy.call(this);
     setupw4StuffProxy.call(this);
     setupOptionsListAccountProxy.call(this);
@@ -3045,6 +3051,28 @@ function setupAlchProxy() {
     },
   });
 }
+// w1 cheats
+function setupw1StuffProxy() {
+  const actorEvents579 = events(579);
+  const Owl = actorEvents579._customBlock_Summoning;
+  actorEvents579._customBlock_Summoning = function (...argumentList) {
+    return cheatState.w1.owl && cheatConfig.w1.owl.hasOwnProperty(argumentList[0])
+      ? cheatConfig.w1.owl[argumentList[0]](Reflect.apply(Owl, this, argumentList))
+      : Reflect.apply(Owl, this, argumentList);
+  };
+}
+
+// w2 cheats
+function setupw2StuffProxy() {
+  const actorEvents579 = events(579);
+  const Roo = actorEvents579._customBlock_Summoning;
+  actorEvents579._customBlock_Summoning = function (...argumentList) {
+    return cheatState.w2.roo && cheatConfig.w2.roo.hasOwnProperty(argumentList[0])
+      ? cheatConfig.w2.roo[argumentList[0]](Reflect.apply(Roo, this, argumentList))
+      : Reflect.apply(Roo, this, argumentList);
+  };
+}
+
 // w3 cheats
 function setupw3StuffProxy() {
   const actorEvents345 = events(345);
@@ -3386,11 +3414,11 @@ function setupw6Proxies() {
 function setupArcadeProxies() {
   const actorEvents345 = events(345)
 
-  const Thingies = actorEvents345._customBlock_DungeonCalc;
+  const DungeonCalc = actorEvents345._customBlock_DungeonCalc;
   actorEvents345._customBlock_DungeonCalc = function (...argumentList) {
     return cheatState.wide.arcade && cheatConfig.wide.arcade.hasOwnProperty(argumentList[0])
-      ? cheatConfig.wide.arcade[argumentList[0]](Reflect.apply(Thingies, this, argumentList))
-      : Reflect.apply(Thingies, this, argumentList);
+      ? cheatConfig.wide.arcade[argumentList[0]](Reflect.apply(DungeonCalc, this, argumentList))
+      : Reflect.apply(DungeonCalc, this, argumentList);
   };
 
 }
