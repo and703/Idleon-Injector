@@ -1,0 +1,54 @@
+name: Build Cross-Platform Binaries
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact-name: InjectCheatsUI-Windows
+            binary-name: InjectCheatsUI.exe
+            build-command: build
+          - os: ubuntu-latest
+            artifact-name: InjectCheatsUI-Linux
+            binary-name: InjectCheatsUI
+            build-command: build-unix
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./src
+
+      - name: Install pkg
+        run: npm install -g pkg
+
+      - name: Build Binary
+        run: npm run ${{ matrix.build-command }}
+        working-directory: ./src
+
+      - name: Create release package
+        shell: bash
+        run: |
+          mkdir -p release-package
+          # Copy all files and directories except release-package
+          find . -maxdepth 1 -not -name '.' -not -name 'release-package' -exec cp -r {} release-package/ \;
+          # Move the binary from src to root of release package
+          mv release-package/src/${{ matrix.binary-name }} release-package/
+
+      - name: Upload Release Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: release-package/
