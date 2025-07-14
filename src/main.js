@@ -108,10 +108,7 @@ function attach(name) {
     });
   });
 }
-
-//TODO: (Shinaii) Full-Auto Linux Support is being tested already and will be in next commit
-
-function manualAttachLinux(timeout = 10000) {
+function AttachLinux(timeout = 10000) {
   const startTime = Date.now();
   return new Promise((resolve, reject) => {
     function check() {
@@ -143,6 +140,68 @@ function manualAttachLinux(timeout = 10000) {
 
     check();
   });
+}
+
+// --- Automatic Linux Attach with Steam ---
+async function autoAttachLinux(timeout = 30000) {
+  // Default AppID for Legends of Idleon
+  const appId = 1476970;
+  let steamCmd = "steam";
+  // Try common locations if not in PATH
+  const possibleSteamPaths = [
+    "/usr/bin/steam",
+    "/usr/local/bin/steam",
+    `${process.env.HOME}/.steam/steam/steam.sh`,
+    `${process.env.HOME}/.local/share/Steam/steam.sh`,
+  ];
+  const { access } = require("fs");
+  const { promisify } = require("util");
+  const accessAsync = promisify(access);
+  let foundSteam = false;
+  for (const p of possibleSteamPaths) {
+    try {
+      await accessAsync(p);
+      steamCmd = p;
+      foundSteam = true;
+      break;
+    } catch (e) {}
+  }
+  if (!foundSteam) {
+    try {
+      await accessAsync("/usr/bin/steam");
+      steamCmd = "/usr/bin/steam";
+      foundSteam = true;
+    } catch (e) {}
+  }
+  if (!foundSteam) {
+    console.error("[Linux] Could not find Steam executable. Please ensure Steam is installed and in your PATH.");
+    throw new Error("Steam not found");
+  }
+
+  // Launch the game using Steam with the required parameters
+  console.log(`[Linux] Launching Legends of Idleon using Steam (AppID: ${appId})...`);
+  const args = [
+    "-applaunch",
+    appId.toString(),
+    `--remote-debugging-port=${cdp_port}`
+  ];
+  const child = spawn(steamCmd, args, {
+    detached: true,
+    stdio: ["ignore", "pipe", "pipe"]
+  });
+
+  let stderr = "";
+  child.stderr.on("data", (data) => {
+    stderr += data.toString();
+  });
+
+  // Poll for CDP endpoint (reuse AttachLinux logic)
+  try {
+    const wsUrl = await AttachLinux(timeout);
+    return wsUrl;
+  } catch (e) {
+    throw new Error(`[Linux] Failed to auto-launch with Steam: ${e.message}\nStderr: ${stderr}`);
+  }
 }
 
 async function setupIntercept(hook) {
@@ -269,10 +328,19 @@ async function setupIntercept(hook) {
 
 // Main execution block
 (async () => {
-  // Wrap main logic in try-catch for overall error handling.
   try {
-    //TODO: (Shinaii) Line 118 ^
-    const hook = await (onLinux ? manualAttachLinux(linuxTimeout) : attach('LegendsOfIdleon.exe'));
+    let hook;
+    if (onLinux) {
+      try {
+        hook = await autoAttachLinux(linuxTimeout);
+      } catch (autoErr) {
+        console.error("[Linux] Auto attach failed:", autoErr.message);
+        console.log("[Linux] Falling back to manual attach. Please launch the game via Steam with the required parameters.");
+        hook = await AttachLinux(linuxTimeout);
+      }
+    } else {
+      hook = await attach('LegendsOfIdleon.exe');
+    }
     console.log("Attached to game process.");
 
     const client = await setupIntercept(hook);
