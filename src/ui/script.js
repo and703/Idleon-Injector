@@ -522,9 +522,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 listItem.appendChild(inputField);
 
                 const removeButton = document.createElement('button');
-                removeButton.textContent = 'Remove';
+                removeButton.textContent = '';
                 removeButton.className = 'remove-cheat-button';
                 removeButton.type = 'button';
+                removeButton.setAttribute('aria-label', 'Remove cheat');
+                removeButton.innerHTML = '';
+                // Icon will be added by CSS ::before
                 removeButton.addEventListener('click', () => listItem.remove());
                 listItem.appendChild(removeButton);
 
@@ -540,9 +543,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const addArea = document.createElement('div');
             addArea.className = 'add-cheat-area';
             const addButton = document.createElement('button');
-            addButton.textContent = '+ Add Cheat';
+            addButton.textContent = '';
             addButton.className = 'add-cheat-button';
             addButton.type = 'button';
+            addButton.setAttribute('aria-label', 'Add cheat');
+            addButton.innerHTML = '';
+            // Icon will be added by CSS ::before
             const searchInput = document.createElement('input');
             searchInput.type = 'text';
             searchInput.placeholder = 'Search cheats...';
@@ -552,10 +558,12 @@ document.addEventListener('DOMContentLoaded', () => {
             searchResults.className = 'cheat-search-results';
             searchResults.style.display = 'none';
             const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Cancel';
+            cancelButton.textContent = '';
             cancelButton.className = 'cancel-add-cheat-button';
             cancelButton.type = 'button';
-            cancelButton.style.display = 'none';
+            cancelButton.setAttribute('aria-label', 'Cancel add cheat');
+            cancelButton.innerHTML = '';
+            // Icon will be added by CSS ::before
 
             addArea.appendChild(addButton);
             addArea.appendChild(searchInput);
