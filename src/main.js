@@ -9,6 +9,7 @@ const express = require('express'); // Added for web UI
 const path = require('path'); // Added for static file serving
 const os = require('os');
 const http = require('http'); // Added for Linux since CDP is buggy on it for some reason.
+const { existsSync } = require('fs');
 
 // Converts a JavaScript object (potentially with functions) into a string representation
 // suitable for injection into the target environment. Functions are converted to their string form.
@@ -204,6 +205,64 @@ async function autoAttachLinux(timeout = 30000) {
   }
 }
 
+// --- Windows Game Launch Helpers ---
+const appId = 1476970;
+const defaultSteamPaths = [
+  // Default Steam install locations for Idleon
+  path.join(process.env["ProgramFiles(x86)"] || "C:/Program Files (x86)", "Steam/steamapps/common/Legends of Idleon/LegendsOfIdleon.exe"),
+  path.join(process.env["ProgramFiles"] || "C:/Program Files", "Steam/steamapps/common/Legends of Idleon/LegendsOfIdleon.exe"),
+  path.join(process.env["ProgramW6432"] || "C:/Program Files", "Steam/steamapps/common/Legends of Idleon/LegendsOfIdleon.exe"),
+  path.join(process.cwd(), "LegendsOfIdleon.exe"),
+];
+
+function findIdleonExe() {
+  if (injectorConfig.gameExePath && existsSync(injectorConfig.gameExePath)) {
+    return injectorConfig.gameExePath;
+  }
+  for (const p of defaultSteamPaths) {
+    if (existsSync(p)) return p;
+  }
+  return null;
+}
+
+function launchIdleonViaSteamProtocol() {
+  // Pass remote debugging port as launch arg
+  const steamUrl = `steam://run/${appId}//--remote-debugging-port=${cdp_port}`;
+  return spawn('cmd', ['/c', 'start', '', steamUrl], { detached: true, stdio: 'ignore' });
+}
+
+function AttachWindows(timeout = 30000) {
+  // Poll for CDP endpoint (like Linux)
+  const startTime = Date.now();
+  return new Promise((resolve, reject) => {
+    function check() {
+      const req = http.get(`http://localhost:${cdp_port}/json/version`, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data);
+            if (json.webSocketDebuggerUrl) {
+              return resolve(json.webSocketDebuggerUrl);
+            }
+            retry();
+          } catch (err) {
+            retry();
+          }
+        });
+      });
+      req.on('error', retry);
+    }
+    function retry() {
+      if (Date.now() - startTime > timeout) {
+        return reject(new Error('Timeout waiting for debugger WebSocket URL. Have you set --remote-debugging-port?'));
+      }
+      setTimeout(check, 500);
+    }
+    check();
+  });
+}
+
 async function setupIntercept(hook) {
   const options = {
     tab: hook,
@@ -338,7 +397,24 @@ async function setupIntercept(hook) {
         console.log("[Linux] Falling back to manual attach. Please launch the game via Steam with the required parameters.");
         hook = await AttachLinux(linuxTimeout);
       }
+    } else if (os.platform() === 'win32') {
+      // --- Windows logic ---
+      let exePath = findIdleonExe();
+      if (exePath) {
+        try {
+          hook = await attach(exePath);
+        } catch (err) {
+          console.error(`[Windows] Failed to launch Idleon EXE at ${exePath}:`, err.message);
+          exePath = null;
+        }
+      }
+      if (!exePath) {
+        console.log('[Windows] Could not find LegendsOfIdleon.exe. Attempting to launch via Steam protocol...');
+        launchIdleonViaSteamProtocol();
+        hook = await AttachWindows(linuxTimeout || 30000);
+      }
     } else {
+      // Default (legacy) logic
       hook = await attach('LegendsOfIdleon.exe');
     }
     console.log("Attached to game process.");
