@@ -1,4 +1,3 @@
-/* Modern Glassmorphic/Neumorphic UI for Idleon Cheat Injector */
 :root {
     --color-bg: #181a20;
     --color-card: rgba(36, 39, 54, 0.85);
@@ -27,7 +26,6 @@ html, body {
     transition: background var(--transition), color var(--transition);
 }
 
-/* Remove max-width and margin for full-viewport layout */
 .app-container {
     width: 100vw;
     min-height: 100vh;
@@ -40,7 +38,6 @@ html, body {
     position: relative;
 }
 
-/* Make main-card fill the viewport, remove border-radius and shadow */
 .main-card {
     background: var(--color-card);
     border-radius: 0;
@@ -54,7 +51,6 @@ html, body {
     z-index: 1;
 }
 
-/* Make header and footer flush with edges */
 .app-header {
     padding: 32px 32px 0 32px;
     width: 100%;
@@ -90,7 +86,6 @@ html, body {
     letter-spacing: 0.5px;
 }
 
-/* Floating Dark Mode Toggle */
 #darkmode-toggle {
     position: fixed;
     top: 18px;
@@ -117,14 +112,12 @@ html, body {
     border-color: var(--color-primary);
 }
 
-/* Make tab content fill horizontally */
 #tab-content {
     width: 100%;
     box-sizing: border-box;
     padding: 0 32px;
 }
 
-/* Make tab-container flush with content */
 .tab-container {
     padding: 0 32px;
     width: 100%;
@@ -377,7 +370,6 @@ html, body {
     box-shadow: 0 4px 16px #7f5af044;
 }
 
-/* Make footer flush with edges */
 .app-footer {
     padding: 32px 32px 16px 32px;
     width: 100%;
@@ -415,7 +407,6 @@ html, body {
     background: var(--color-primary);
 }
 
-/* Responsive Design */
 @media (max-width: 700px) {
     .app-header, .app-footer, #tab-content, .tab-container {
         padding: 0 8px;
@@ -548,7 +539,6 @@ html, body {
 .config-item-content:not([style*="display: none"]) {
     max-height: 1000px;
 }
-/* Nested config-nested sections */
 .config-nested {
     margin-left: 18px;
     padding-left: 16px;
