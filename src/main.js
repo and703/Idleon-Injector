@@ -43,7 +43,7 @@ const objToString = (obj) => {
 // Tool initialization messages
 
 console.log('------------------------------------------------------------------------------------------');
-console.log('InjectCheatUI v1.1.2');
+console.log('InjectCheatUI v1.2.0');
 console.log('------------------------------------------------------------------------------------------');
 console.log('');
 
@@ -165,14 +165,14 @@ async function autoAttachLinux(timeout = 30000) {
       steamCmd = p;
       foundSteam = true;
       break;
-    } catch (e) {}
+    } catch (e) { }
   }
   if (!foundSteam) {
     try {
       await accessAsync("/usr/bin/steam");
       steamCmd = "/usr/bin/steam";
       foundSteam = true;
-    } catch (e) {}
+    } catch (e) { }
   }
   if (!foundSteam) {
     console.error("[Linux] Could not find Steam executable. Please ensure Steam is installed and in your PATH.");
