@@ -85,8 +85,3 @@
 - **Modern web UI** for all config and cheat management
 - Expanded config.js with the injection Regex, which you can freely edit.
 ---
-
-## Credits
-
-- Forked from iBelg's version 1.1.1 tool
-- UI and enhancements by MrJoiny and contributors
