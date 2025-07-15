@@ -563,6 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cancelButton.type = 'button';
             cancelButton.setAttribute('aria-label', 'Cancel add cheat');
             cancelButton.innerHTML = '';
+            cancelButton.style.display = 'none';
             // Icon will be added by CSS ::before
 
             addArea.appendChild(addButton);
