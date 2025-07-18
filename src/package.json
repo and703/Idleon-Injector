@@ -27,6 +27,8 @@
   "scripts": {
     "start": "node main.js",
     "start:refactored": "node main-refactored.js",
+    "start:debug": "node main-refactored.js --debug",
+    "start:trace": "node main-refactored.js --trace",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
