@@ -32,6 +32,12 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "start:refactored": "node main-refactored.js",
+    "start:debug": "node main-refactored.js --debug",
+    "start:trace": "node main-refactored.js --trace",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "build": "pkg . -t node18-win-x64 --compress Gzip --output InjectCheatsUI.exe",
     "build-unix": "pkg . -t node18-linux-x64 --compress Gzip --output InjectCheatsUI"
   },
@@ -39,5 +45,9 @@
     "assets": [
       "ui/**/*"
     ]
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8"
   }
 }
