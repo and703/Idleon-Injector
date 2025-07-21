@@ -63,8 +63,8 @@ class CheatInjector {
 
   async setupInterception(cheatConfig, startupCheats) {
     const step = this.debugSession.startStep('SETUP_INTERCEPTION', {
-      cheatConfigKeys: Object.keys(cheatConfig),
-      startupCheatsCount: startupCheats.length
+      cheatConfigKeys: cheatConfig ? Object.keys(cheatConfig) : [],
+      startupCheatsCount: startupCheats ? startupCheats.length : 0
     });
     
     if (!this.isConnected) {
@@ -73,6 +73,16 @@ class CheatInjector {
       throw new Error('Not connected to game');
     }
 
+    // Ensure we have valid config objects
+    const safeCheatConfig = cheatConfig || {};
+    const safeStartupCheats = startupCheats || [];
+    
+    step.info('Configuration validation', {
+      hasCheatConfig: !!cheatConfig,
+      hasStartupCheats: !!startupCheats,
+      cheatConfigKeys: Object.keys(safeCheatConfig),
+      startupCheatsCount: safeStartupCheats.length
+    });
     step.info('Extracting CDP domains');
     const { Network, Page, Runtime } = this.client;
 
@@ -82,7 +92,7 @@ class CheatInjector {
     step.info('Cheat file loaded', { size: cheats.length });
     
     step.info('Preparing cheat configuration');
-    cheats = `let startupCheats = ${JSON.stringify(startupCheats)};\nlet cheatConfig = ${this.objToString(cheatConfig)};\n${cheats}`;
+    cheats = `let startupCheats = ${JSON.stringify(safeStartupCheats)};\nlet cheatConfig = ${this.objToString(safeCheatConfig)};\n${cheats}`;
     step.info('Cheat configuration prepared', { totalSize: cheats.length });
 
     // Setup interception
