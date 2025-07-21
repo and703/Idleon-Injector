@@ -122,13 +122,27 @@ class Application {
   async startCLI() {
     const step = debugSession.startStep('START_CLI');
     
-    step.info('Fetching cheat suggestions and confirmation list');
-    const choices = await this.cheatManager.getAutoCompleteSuggestions();
-    const cheatsNeedingConfirmation = await this.cheatManager.getChoicesNeedingConfirmation();
-    step.info('CLI data loaded', { 
-      choiceCount: choices.length, 
-      confirmationCount: cheatsNeedingConfirmation.length 
-    });
+    let choices = [];
+    let cheatsNeedingConfirmation = [];
+    
+    try {
+      step.info('Fetching cheat suggestions and confirmation list');
+      choices = await this.cheatManager.getAutoCompleteSuggestions();
+      cheatsNeedingConfirmation = await this.cheatManager.getChoicesNeedingConfirmation();
+      step.info('CLI data loaded', { 
+        choiceCount: choices.length, 
+        confirmationCount: cheatsNeedingConfirmation.length 
+      });
+    } catch (error) {
+      step.warn('Failed to load cheat data, using fallback', { error: error.message });
+      // Provide basic fallback choices
+      choices = [
+        { message: 'help - Show available commands', value: 'help' },
+        { message: 'chromedebug - Open Chrome DevTools', value: 'chromedebug' },
+        { message: 'retry - Retry loading cheats', value: 'retry' }
+      ];
+      cheatsNeedingConfirmation = [];
+    }
 
     const promptUser = async () => {
       const promptStep = debugSession.startStep('CLI_PROMPT');
@@ -182,17 +196,52 @@ class Application {
         });
         promptStep.info('User selected action', { action });
 
-        if (action === 'chromedebug') {
+        if (action === 'retry') {
+          promptStep.info('Retrying cheat data load');
+          try {
+            choices = await this.cheatManager.getAutoCompleteSuggestions();
+            cheatsNeedingConfirmation = await this.cheatManager.getChoicesNeedingConfirmation();
+            promptStep.info('Retry successful', { 
+              choiceCount: choices.length, 
+              confirmationCount: cheatsNeedingConfirmation.length 
+            });
+          } catch (retryError) {
+            promptStep.error(retryError);
+            this.logger.error('Retry failed', { error: retryError.message });
+          }
+        } else if (action === 'chromedebug') {
           promptStep.info('Opening Chrome debugger');
-          const url = await this.cheatManager.getDevToolsUrl();
-          const { spawn } = require('child_process');
-          spawn(injectorConfig.chrome, ["--new-window", url]);
-          promptStep.info('Chrome debugger opened', { url });
+          try {
+            const url = await this.cheatManager.getDevToolsUrl();
+            const { spawn } = require('child_process');
+            spawn(injectorConfig.chrome, ["--new-window", url]);
+            promptStep.info('Chrome debugger opened', { url });
+          } catch (debugError) {
+            promptStep.error(debugError);
+            this.logger.error('Failed to open Chrome debugger', { error: debugError.message });
+          }
+        } else if (action === 'help') {
+          promptStep.info('Showing help information');
+          console.log('\n=== Idleon Cheat Injector Help ===');
+          console.log('Available commands:');
+          console.log('- help: Show this help message');
+          console.log('- chromedebug: Open Chrome DevTools for the game');
+          console.log('- retry: Retry loading cheat suggestions');
+          console.log('- Any cheat command (if loaded successfully)');
+          console.log('=====================================\n');
         } else {
           promptStep.info('Executing cheat action');
-          const result = await this.cheatManager.executeCheat(action);
-          promptStep.info('Cheat executed', { action, result });
-          this.logger.info(`[CHEAT RESULT] ${result}`);
+          try {
+            const result = await this.cheatManager.executeCheat(action);
+            promptStep.info('Cheat executed', { action, result });
+            this.logger.info(`[CHEAT RESULT] ${result}`);
+          } catch (cheatError) {
+            promptStep.error(cheatError);
+            this.logger.error('Cheat execution failed', { 
+              action, 
+              error: cheatError.message 
+            });
+          }
         }
 
         promptStep.success('Prompt completed, restarting');

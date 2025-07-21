@@ -36,11 +36,23 @@ class CheatManager {
     // Wait for page load
     step.info('Setting up page load event listener');
     return new Promise((resolve, reject) => {
+      // Set a timeout for page load
+      const pageLoadTimeout = setTimeout(() => {
+        const error = new Error('Timeout waiting for page load event');
+        step.error(error);
+        reject(error);
+      }, 60000); // 60 second timeout
+
       Page.loadEventFired(async () => {
+        clearTimeout(pageLoadTimeout); // Clear timeout on successful load
         const loadStep = this.debugSession.startStep('PAGE_LOAD_HANDLER');
         
         try {
           loadStep.info('Page load event fired, starting cheat initialization');
+          
+          // Wait a bit for iframe to be ready
+          loadStep.info('Waiting for iframe to be ready');
+          await new Promise(resolve => setTimeout(resolve, 2000));
           
           // Verify context exists
           loadStep.info('Verifying cheat context exists');
@@ -48,20 +60,62 @@ class CheatManager {
           loadStep.info('Context check result', { exists: contextExists.result.value });
           
           if (!contextExists.result.value) {
-            const error = new Error("Cheat context not found in iframe");
+            // Try alternative context paths
+            loadStep.info('Primary context not found, trying alternatives');
+            const alternatives = [
+              `window.__idleon_cheats__`,
+              `window.frames[0].__idleon_cheats__`,
+              `document.querySelector('iframe').contentWindow.__idleon_cheats__`
+            ];
+            
+            let foundContext = null;
+            for (const altContext of alternatives) {
+              try {
+                const altExists = await Runtime.evaluate({ expression: `!!${altContext}` });
+                if (altExists.result.value) {
+                  foundContext = altContext;
+                  loadStep.info('Found alternative context', { context: altContext });
+                  break;
+                }
+              } catch (e) {
+                loadStep.info('Alternative context failed', { context: altContext, error: e.message });
+              }
+            }
+            
+            if (foundContext) {
+              this.context = foundContext;
+            } else {
+              const error = new Error("Cheat context not found in iframe or any alternatives");
+              loadStep.error(error);
+              throw error;
+            }
+          }
             loadStep.error(error);
             throw error;
           }
 
           // Initialize cheats
           loadStep.info('Calling cheat setup function');
-          const init = await Runtime.evaluate({ 
-            expression: `setup.call(${this.context})`, 
-            awaitPromise: true, 
-            allowUnsafeEvalBlockedByCSP: true 
-          });
+          let init;
+          try {
+            init = await Runtime.evaluate({ 
+              expression: `setup.call(${this.context})`, 
+              awaitPromise: true, 
+              allowUnsafeEvalBlockedByCSP: true 
+            });
+          } catch (setupError) {
+            loadStep.warn('Setup function failed, trying direct call', { error: setupError.message });
+            init = await Runtime.evaluate({ 
+              expression: `setup()`, 
+              awaitPromise: true, 
+              allowUnsafeEvalBlockedByCSP: true 
+            });
+          }
           loadStep.info('Cheat setup completed', { result: init.result.value });
 
+          // Mark as initialized
+          this.isInitialized = true;
+          
           loadStep.success('Cheat initialization completed successfully');
           step.success('Cheat manager initialized');
           resolve();
@@ -83,19 +137,31 @@ class CheatManager {
   async executeCheat(action) {
     const step = this.debugSession.startStep('EXECUTE_CHEAT', { action });
     
-    if (!this.context) {
-      const error = new Error('Cheat manager not initialized');
+    if (!this.isInitialized || !this.context) {
+      const error = new Error('Cheat manager not initialized or context not available');
       step.error(error);
       throw error;
     }
 
     step.info('Executing cheat in game context');
     const { Runtime } = this.injector.client;
-    const response = await Runtime.evaluate({ 
-      expression: `cheat.call(${this.context}, '${action}')`, 
-      awaitPromise: true, 
-      allowUnsafeEvalBlockedByCSP: true 
-    });
+    
+    let response;
+    try {
+      response = await Runtime.evaluate({ 
+        expression: `cheat.call(${this.context}, '${action}')`, 
+        awaitPromise: true, 
+        allowUnsafeEvalBlockedByCSP: true 
+      });
+    } catch (evalError) {
+      step.warn('Cheat call failed, trying direct execution', { error: evalError.message });
+      response = await Runtime.evaluate({ 
+        expression: `cheat('${action}')`, 
+        awaitPromise: true, 
+        allowUnsafeEvalBlockedByCSP: true 
+      });
+    }
+    
     step.info('Cheat execution response received', { 
       hasException: !!response.exceptionDetails,
       resultType: response.result?.type
@@ -118,19 +184,31 @@ class CheatManager {
   async getAutoCompleteSuggestions() {
     const step = this.debugSession.startStep('GET_AUTOCOMPLETE_SUGGESTIONS');
     
-    if (!this.context) {
-      const error = new Error('Cheat manager not initialized');
+    if (!this.isInitialized || !this.context) {
+      const error = new Error('Cheat manager not initialized or context not available');
       step.error(error);
       throw error;
     }
 
     step.info('Fetching autocomplete suggestions from game');
     const { Runtime } = this.injector.client;
-    const result = await Runtime.evaluate({ 
-      expression: `getAutoCompleteSuggestions.call(${this.context})`, 
-      awaitPromise: true, 
-      returnByValue: true 
-    });
+    
+    let result;
+    try {
+      result = await Runtime.evaluate({ 
+        expression: `getAutoCompleteSuggestions.call(${this.context})`, 
+        awaitPromise: true, 
+        returnByValue: true 
+      });
+    } catch (evalError) {
+      step.warn('Autocomplete call failed, trying direct call', { error: evalError.message });
+      result = await Runtime.evaluate({ 
+        expression: `getAutoCompleteSuggestions()`, 
+        awaitPromise: true, 
+        returnByValue: true 
+      });
+    }
+    
     step.info('Autocomplete response received', {
       hasException: !!result.exceptionDetails,
       resultType: result.result?.type
@@ -148,16 +226,26 @@ class CheatManager {
   }
 
   async getChoicesNeedingConfirmation() {
-    if (!this.context) {
-      throw new Error('Cheat manager not initialized');
+    if (!this.isInitialized || !this.context) {
+      throw new Error('Cheat manager not initialized or context not available');
     }
 
     const { Runtime } = this.injector.client;
-    const result = await Runtime.evaluate({ 
-      expression: `getChoicesNeedingConfirmation.call(${this.context})`, 
-      awaitPromise: true, 
-      returnByValue: true 
-    });
+    
+    let result;
+    try {
+      result = await Runtime.evaluate({ 
+        expression: `getChoicesNeedingConfirmation.call(${this.context})`, 
+        awaitPromise: true, 
+        returnByValue: true 
+      });
+    } catch (evalError) {
+      result = await Runtime.evaluate({ 
+        expression: `getChoicesNeedingConfirmation()`, 
+        awaitPromise: true, 
+        returnByValue: true 
+      });
+    }
 
     if (result.exceptionDetails) {
       throw new Error(result.exceptionDetails.text);

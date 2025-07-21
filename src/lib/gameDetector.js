@@ -127,12 +127,15 @@ class GameDetector {
       const process = spawn(exePath, [`--remote-debugging-port=${this.cdpPort}`]);
       step.info('Game process spawned', { pid: process.pid });
 
+      let resolved = false;
+      
       process.stderr.on('data', (data) => {
         const dataStr = data.toString();
         step.info('Game process stderr output', { output: dataStr.trim() });
         
         const match = data.toString().match(/DevTools listening on (ws:\/\/.*)/);
-        if (match) {
+        if (match && !resolved) {
+          resolved = true;
           step.success('DevTools WebSocket URL found', { url: match[1] });
           resolve(match[1]);
         }
@@ -143,19 +146,32 @@ class GameDetector {
       });
 
       process.on('error', (err) => {
-        step.error(err);
-        reject(err);
+        if (!resolved) {
+          resolved = true;
+          step.error(err);
+          reject(err);
+        }
       });
 
       process.on('exit', (code, signal) => {
         step.info('Game process exited', { code, signal });
+        if (!resolved) {
+          resolved = true;
+          const error = new Error(`Game process exited unexpectedly (code: ${code}, signal: ${signal})`);
+          step.error(error);
+          reject(error);
+        }
       });
 
-      // Timeout after 30 seconds
+      // Timeout after 45 seconds (increased from 30)
       setTimeout(() => {
-        step.error(new Error('Timeout waiting for game to start'));
-        reject(new Error('Timeout waiting for game to start'));
-      }, 30000);
+        if (!resolved) {
+          resolved = true;
+          const error = new Error('Timeout waiting for game to start');
+          step.error(error);
+          reject(error);
+        }
+      }, 45000);
     });
   }
 
